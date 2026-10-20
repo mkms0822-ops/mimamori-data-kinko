@@ -415,9 +415,82 @@ body.is-vault{background:var(--bg);}
 body.is-vault-view{background:var(--bg);}
 
 body.is-vault-view #toast{bottom:92px;}
+
+/* ===== いつものヘッダー ===== */
+.appbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:5px;flex-wrap:nowrap;overflow-x:auto;
+  background:rgba(255,255,255,.97);border-bottom:1px solid var(--line);padding:7px 12px;padding-top:calc(7px + env(safe-area-inset-top,0px));margin:-22px -16px 14px;}
+body.is-hero .appbar,body.is-vault-view .appbar{margin:0;}
+body.is-hero .appbar{background:rgba(11,22,48,.95);border-bottom-color:#27406e;}
+.appbar::-webkit-scrollbar{display:none}
+.tb{display:inline-flex;align-items:center;gap:4px;flex-shrink:0;padding:8px 11px;border:1px solid var(--line);border-radius:99px;background:#fff;color:var(--ink-soft);font:inherit;font-size:12px;cursor:pointer;white-space:nowrap;line-height:1}
+.tb:hover{border-color:var(--brand);color:var(--brand)}
+.tb:focus-visible,.tb-sz button:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+.tb .ic{font-size:14px}
+.tb-sz{display:inline-flex;border:1px solid var(--line);border-radius:99px;overflow:hidden;flex-shrink:0}
+.tb-sz button{border:none;background:#fff;color:var(--ink-soft);font:inherit;cursor:pointer;padding:8px 10px;line-height:1}
+.tb-sz button.on{background:var(--brand);color:#fff}
+.tb-sz .z1{font-size:10.5px}.tb-sz .z2{font-size:12.5px}.tb-sz .z3{font-size:15px}
+.tb-ham{margin-left:auto}
+body.is-hero .tb,body.is-hero .tb-sz button{background:#14284f;border-color:#2c4a80;color:#cfe0ff}
+body.is-hero .tb-sz{border-color:#2c4a80}
+body.is-hero .tb-sz button.on{background:#4da3ff;color:#06142e}
+.zoomed{zoom:var(--z,1)}
+.mnu{position:fixed;inset:0;z-index:90;visibility:hidden;pointer-events:none;background:rgba(10,18,30,0);transition:background .25s}
+.mnu.open{visibility:visible;pointer-events:auto;background:rgba(10,18,30,.55)}
+.mnu-in{position:absolute;top:0;right:0;height:100%;width:min(90vw,340px);background:var(--panel);color:var(--ink);overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:calc(18px + env(safe-area-inset-top,0px)) 16px calc(28px + env(safe-area-inset-bottom,0px));box-shadow:-8px 0 30px rgba(10,20,35,.3);
+  transform:translateX(100%);transition:transform .3s cubic-bezier(.16,1,.3,1)}
+.mnu.open .mnu-in{transform:translateX(0)}
+.mnu-h{display:flex;align-items:center;gap:9px;padding-bottom:14px;border-bottom:1px solid var(--line);margin-bottom:14px}
+.mnu-h b{flex:1;font-size:16px}
+.mnu-x{background:none;border:none;font-size:21px;color:var(--ink-soft);cursor:pointer;padding:4px}
+.mnu-sec{font-size:10px;letter-spacing:.14em;color:var(--ink-soft);margin:16px 2px 7px;font-weight:700}
+.mnu-i{display:flex;align-items:center;gap:11px;width:100%;padding:13px 14px;margin-bottom:6px;border:1px solid var(--line);border-radius:12px;background:transparent;color:inherit;font:inherit;font-size:14px;font-weight:700;text-align:left;cursor:pointer}
+.mnu-i:hover{border-color:var(--brand)}
+.mnu-i .ic{font-size:19px;flex-shrink:0}
+.mnu-i .tx{flex:1;min-width:0}
+.mnu-i .tx small{display:block;font-size:11px;color:var(--ink-soft);font-weight:400;margin-top:2px;line-height:1.6}
+@media print{.appbar,.mnu{display:none !important}}
+/* ===== 暗い表示(画面のみ) ===== */
+@media screen{
+html.dk{background:#0e141f;--ink:#e2e8f0;--ink-soft:#a3b1c6;--line:#2e3b50;--muted:#8795a0;--paper:#1a2332;--bg:#0e141f;--panel:#1a2332;--field:#222c3e;--brand-soft:#1e3350;--accent-soft:#3a2420;--brand:#4da3ff;--brand-deep:#9fcdff;--accent:#ff9b7a}
+html.dk body:not(.is-hero){background:#0e141f;color:#e2e8f0}
+html.dk .appbar,html.dk .tb,html.dk .tb-sz button,html.dk .back-btn,html.dk .wz-card,html.dk .wz-box,html.dk .wz-last,html.dk .wz-sub,html.dk .vb,html.dk .tab,html.dk .vrow,html.dk .vrow .rdel,html.dk .btn,html.dk .form,html.dk .vcard,html.dk #vHelp .box,html.dk #wipeDlg .box,html.dk .wz-nav{background:#1a2332 !important;color:#e2e8f0;border-color:#2e3b50}
+html.dk .wz-nav{background:linear-gradient(#1a233200,#1a2332 30%) !important;border:0}
+html.dk .tb-sz button.on,html.dk .wz-card.on,html.dk .tab.on,html.dk .vb.pri{background:#2a5a9a !important;color:#fff;border-color:#4da3ff}
+html.dk .wz-next{background:#2f6fb8;color:#fff}
+html.dk input,html.dk textarea,html.dk select{background:#222c3e !important;color:#e2e8f0 !important;border-color:#2e3b50 !important}
+html.dk .wz-h,html.dk .wz-tx b,html.dk .sheet *{color:inherit}
+html.dk .sheet{background:#fff;color:#1f2a33}
+}
 </style>
 </head>
 <body class="is-hero">
+<!-- ============ いつものヘッダー ============ -->
+<header class="appbar" id="appbar">
+  <button type="button" class="tb" id="abRefresh"><span class="ic">🔄</span><span class="tx">更新</span></button>
+  <button type="button" class="tb" id="abShare">📤 共有</button>
+  <button type="button" class="tb" id="abCopy">📋 コピー</button>
+  <button type="button" class="tb" id="abUrl">🔗 リンク</button>
+  <button type="button" class="tb" id="abTheme"><span class="ic">🌙</span> <span class="tx">暗く</span></button>
+  <span class="tb-sz" role="group" aria-label="文字の大きさ"><button type="button" class="z1" data-z="s">小</button><button type="button" class="z2" data-z="m">中</button><button type="button" class="z3" data-z="l">大</button></span>
+  <button type="button" class="tb tb-ham" id="abMenu" aria-label="メニュー">☰</button>
+</header>
+<div class="mnu" id="mnu">
+  <nav class="mnu-in">
+    <div class="mnu-h"><span style="font-size:22px">🗄</span><b>メニュー</b><button type="button" class="mnu-x" id="mnuX" aria-label="閉じる">✕</button></div>
+    <div class="mnu-sec">// つくる</div>
+    <button type="button" class="mnu-i" data-m="hero"><span class="ic">🏠</span><span class="tx">トップ<small>入口の画面にもどる</small></span></button>
+    <button type="button" class="mnu-i" data-m="vault"><span class="ic">🗄</span><span class="tx">データ保管QRメーカー<small>電話帳・ID／パスワードを紙のQRに</small></span></button>
+    <button type="button" class="mnu-i" data-m="mimamori"><span class="ic">🆘</span><span class="tx">見守りQR連絡先カードメーカー<small>緊急時の連絡先カード</small></span></button>
+    <div class="mnu-sec">// もどす・消す</div>
+    <button type="button" class="mnu-i" data-m="restore"><span class="ic">🔍</span><span class="tx">QRから元にもどす<small>読み取った文字を、元のデータに</small></span></button>
+    <button type="button" class="mnu-i" data-m="wipe"><span class="ic">🧹</span><span class="tx">印刷が終わった → 全データ削除<small>入力・QR・ローカルストレージを消去</small></span></button>
+    <div class="mnu-sec">// 説明</div>
+    <button type="button" class="mnu-i" data-m="help"><span class="ic">📖</span><span class="tx">くわしい説明<small>文字数・圧縮・暗号化・印刷のコツ</small></span></button>
+  </nav>
+</div>
+
 <!-- ============ ヒーロー(入口) ============ -->
 <section id="hero">
   <div class="hero-in">
@@ -4290,7 +4363,57 @@ window.addEventListener("afterprint",function(){
 window.__qrvaultOpenWipe=function(){ WIPE_Q=$("wipeBody").getAttribute("data-q"); openWipe(); };
 window.addEventListener("beforeunload",function(){ try{ if(S.store==="mem") localStorage.removeItem(KEY_TRAY); }catch(e){} });
 loadTray(); render();
+window.__qvShow=show; window.__qvOpenHelp=function(){ $("vHelp").classList.add("open"); };
 window.__qv={data:data,S:S,tray:function(){ return tray; },encodeSet:encodeSet,chunkPayload:chunkPayload,qrSvg:qrSvg,render:render,go:go};
+})();
+
+</script>
+<script>
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id);};
+var TK="qrk-theme",ZK="qrk-size",ZS={s:0.9,m:1,l:1.18};
+function get(k,d){ try{ return localStorage.getItem(k)||d; }catch(e){ return d; } }
+function put(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+function tst(m){ var t=$("toast"); if(!t) return; t.textContent=m; t.classList.add("show"); clearTimeout(tst.t); tst.t=setTimeout(function(){ t.classList.remove("show"); },2600); }
+function theme(v){ document.documentElement.classList.toggle("dk",v==="dark"); var b=$("abTheme"); b.querySelector(".ic").textContent=v==="dark"?"☀️":"🌙"; b.querySelector(".tx").textContent=v==="dark"?"明るく":"暗く"; }
+function size(v){
+  document.documentElement.style.setProperty("--z",ZS[v]||1);
+  ["hero","viewVault","viewMimamori"].forEach(function(i){ var e=$(i); if(e) e.classList.add("zoomed"); });
+  Array.prototype.forEach.call(document.querySelectorAll(".tb-sz button"),function(b){ b.classList.toggle("on",b.getAttribute("data-z")===v); });
+}
+theme(get(TK,"light")); size(get(ZK,"m"));
+$("abTheme").onclick=function(){ var n=get(TK,"light")==="dark"?"light":"dark"; put(TK,n); theme(n); };
+Array.prototype.forEach.call(document.querySelectorAll(".tb-sz button"),function(b){ b.onclick=function(){ var v=b.getAttribute("data-z"); put(ZK,v); size(v); }; });
+function copy(t,done){
+  function fb(){ try{ var a=document.createElement("textarea"); a.value=t; a.style.cssText="position:fixed;opacity:0"; document.body.appendChild(a); a.select(); document.execCommand("copy"); document.body.removeChild(a); tst(done); }catch(e){ tst("コピーできませんでした"); } }
+  if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(function(){ tst(done); },fb); else fb();
+}
+function url(){ return location.href.split("#")[0]; }
+var SHARE="紙のQR金庫｜データ物理保存QRメーカー\n電話帳・ID／パスワードを紙のQRにして保管する、サイバー攻撃への備えです。\n";
+$("abShare").onclick=function(){ if(navigator.share){ navigator.share({title:"紙のQR金庫",text:SHARE,url:url()}).catch(function(){}); return; } copy(SHARE+url(),"共有メッセージをコピーしました"); };
+$("abUrl").onclick=function(){ copy(url(),"リンクをコピーしました"); };
+$("abCopy").onclick=function(){
+  copy("【紙のQR金庫｜使い方】\n1. 入れるデータを選ぶ(電話帳・ID／パスワード・大事な番号・メモ)\n2. ファイル／貼り付け／手入力で入れる\n3. 安全さを選ぶ(パスフレーズで暗号化・重要データは半分に切って別保管)\n4. QRを作って溜める\n5. まとめて印刷 → 1枚スマホで読み取りテスト\n6. 「すべて削除」で端末のデータとローカルストレージを消す\n\n※入力した内容は外部に送信されません。機内モードで使うのがおすすめです。\n"+url(),"使い方をコピーしました");
+};
+$("abRefresh").onclick=function(){
+  if(navigator.onLine===false){ tst("いまはオフラインです"); return; }
+  tst("最新版を確認しています…(入力中のデータは消えません)");
+  setTimeout(function(){ try{ location.reload(); }catch(e){} },500);
+};
+function open_(){ $("mnu").classList.add("open"); document.body.style.overflow="hidden"; }
+function close_(){ $("mnu").classList.remove("open"); document.body.style.overflow=""; }
+$("abMenu").onclick=open_; $("mnuX").onclick=close_;
+$("mnu").addEventListener("click",function(e){ if(e.target===this) close_(); });
+document.addEventListener("keydown",function(e){ if(e.key==="Escape") close_(); });
+Array.prototype.forEach.call(document.querySelectorAll("[data-m]"),function(b){ b.onclick=function(){
+  var m=b.getAttribute("data-m"); close_();
+  if(m==="hero"||m==="mimamori") window.__qvShow(m);
+  else if(m==="vault"){ window.__qvShow("vault"); window.__qv.S.hist=[]; window.__qv.go("start",true); }
+  else if(m==="restore"){ window.__qvShow("vault"); window.__qv.S.hist=["start"]; window.__qv.go("restore",true); }
+  else if(m==="wipe"){ if(window.__qrvaultOpenWipe) window.__qrvaultOpenWipe(); }
+  else if(m==="help"){ window.__qvOpenHelp(); }
+}; });
 })();
 
 </script>
