@@ -474,6 +474,12 @@ html.dk[data-theme="purple"] .sheet{--brand:#6a4a8f;--brand-deep:#4f3670;--brand
 html.dk[data-theme="rose"] .sheet{--brand:#b0446a;--brand-deep:#8a3352;--brand-soft:#f8e6ec;--accent:#0e7c86;--accent-soft:#e3f0f1;}
 }
 html.dk .sheet .empty{color:#8a928a}
+.wz-how{margin:0}
+.wz-how summary{font-size:14.5px}
+.wz-hn{font-size:13.5px;line-height:1.8;color:var(--ink-soft);margin:8px 0}
+.wz-hh{font-size:15px;margin:12px 0 2px;color:var(--ink)}
+.wz-ol{margin:4px 0 8px;padding-left:1.4em;font-size:13.5px;line-height:1.85}
+.wz-ol li{margin-bottom:2px}
 </style>
 </head>
 <body class="is-hero">
@@ -4137,10 +4143,24 @@ function stepPick(){
   var n=CATS.filter(function(c){ return S.cats[c.id]; }).length;
   return {h:h,nav:'<button type="button" class="wz-next" data-a="pickNext"'+(n?"":" disabled")+'>次へ →</button>'};
 }
+function contactsHow(open){
+  return '<details class="wz-adv wz-how"'+(open?' open':'')+'><summary>📖 電話帳を、テキストのファイルにする方法</summary>'+
+  '<p class="wz-hn">電話帳は「vCard(.vcf)」というテキストのファイルに書き出せます(中身は文字です)。書き出したら、下の「ファイルを選ぶ」で選んでください。画面の名前や場所は、機種・OSのバージョンで少し違います。</p>'+
+  '<h3 class="wz-hh">🤖 Android</h3>'+
+  '<ol class="wz-ol"><li>「連絡先」アプリを開く</li><li>左上の「☰」→「設定」(Galaxyなどは「連絡先を管理」)</li><li>「エクスポート」→ 書き出す連絡先のアカウントを選ぶ</li><li>「.vcfファイルにエクスポート」(Galaxyは「内部ストレージ」)を選び、保存する</li><li>保存先は「ダウンロード」などのフォルダです。ここに「連絡先.vcf」ができます</li></ol>'+
+  '<p class="wz-hn">パソコンがあるとき:<b>contacts.google.com</b> にログイン →「エクスポート」→「vCard」または「Google CSV」を選びます。</p>'+
+  '<h3 class="wz-hh">🍎 iPhone</h3>'+
+  '<ol class="wz-ol"><li>iPhoneは、OSのバージョンで書き出しの操作が違うため、どの機種でも使える<b>iCloudを使う方法</b>を説明します</li><li>Safariで <b>icloud.com</b> を開き、Apple Accountでログイン →「連絡先」</li><li>(スマホでは、Safariの「アドレスバー左のAa」→「デスクトップ用Webサイトを表示」にします)</li><li>左下の「⚙」→「すべてを選択」→ もう一度「⚙」→「vCardを書き出す」</li><li>「ダウンロード」されたファイルは、「ファイル」アプリの「ダウンロード」にあります</li></ol>'+
+  '<p class="wz-hn">Macがあるとき:「連絡先」アプリ → すべての連絡先を選ぶ →「ファイル」→「書き出す」→「vCardを書き出す」。<br>1件だけなら、連絡先を開いて「連絡先を共有」→「ファイルに保存」でも書き出せます。</p>'+
+  '<h3 class="wz-hh">⚠ 書き出したあとに</h3>'+
+  '<ul class="wz-ol"><li>書き出したファイルには、電話帳が<b>そのまま</b>入っています。メールやクラウドには、置かないでください</li><li>QRにしたら、ファイルを<b>ゴミ箱まで</b>削除します(印刷後の「全削除」では、ファイルは消えません)</li><li>うまく選べないときは、ファイルの名前の終わりを「.txt」に変えても、読み込めます</li></ul>'+
+  '</details>';
+}
 function stepInput(){
   var id=S.queue[S.qi], c=catOf(id), n=nonEmpty(id).length, m=S.mode[id]||"";
   var h='<div class="wz-badge">'+(S.qi+1)+' / '+S.queue.length+'</div><h1 class="wz-h">'+c.ico+" "+esc(c.name)+'</h1><p class="wz-p">'+esc(c.how)+'</p>';
   h+='<div class="wz-count">いま <b>'+n+'</b> 件</div>';
+  if(id==="contacts") h+=contactsHow(false);
   if(!m){
     h+='<div class="wz-choices sm">';
     h+=card("file","📂","ファイルを選ぶ","書き出したファイル(.vcf／.csv／.txt)");
