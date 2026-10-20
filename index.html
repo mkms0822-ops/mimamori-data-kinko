@@ -348,6 +348,73 @@ pre.out{white-space:pre-wrap; word-break:break-all; background:#f4f7f8; border:1
 /* スマホ幅:カードが縦並びのとき、高さがつぶれて重なるのを防ぐ */
 @media (max-width:900px){ .sheet{flex-direction:column;} .pcard{flex:0 0 auto;} }
 @media (max-width:900px){ #viewMimamori .wrap{grid-template-columns:minmax(0,1fr);} #viewMimamori .form,#viewMimamori .prev-col{min-width:0;} #viewMimamori .sheet{width:100%;} }
+
+/* ===== プレゼン形式(1画面1テーマ) ===== */
+body.is-vault{background:var(--bg);}
+#viewVault{min-height:100vh; min-height:100dvh;}
+.wz{max-width:680px; margin:0 auto; min-height:100vh; min-height:100dvh; display:flex; flex-direction:column; padding:10px 16px 18px; padding-bottom:max(18px, env(safe-area-inset-bottom,0px));}
+.wz-top{display:flex; align-items:center; gap:8px; min-height:44px;}
+.wz-ico-btn{border:0; background:transparent; color:var(--brand-deep); font:inherit; font-size:14px; font-weight:800; padding:8px 6px; cursor:pointer; min-width:64px;}
+.wz-ico-btn[hidden]{display:block !important; visibility:hidden;}
+.wz-dots{flex:1; display:flex; gap:6px; justify-content:center;}
+.wz-dots i{width:30px; height:6px; border-radius:3px; background:var(--line);}
+.wz-dots i.on{background:var(--brand);}
+.wz-stage{flex:1; display:flex; flex-direction:column; justify-content:center; gap:16px; padding:10px 0 18px; animation:wzIn .28s ease;}
+@keyframes wzIn{from{opacity:0; transform:translateX(24px);} to{opacity:1; transform:none;}}
+.wz-h{font-size:clamp(24px,6vw,32px); font-weight:800; line-height:1.4; margin:0; color:var(--ink); text-wrap:balance;}
+.wz-p{font-size:15.5px; line-height:1.9; color:var(--ink-soft); margin:0;}
+.wz-p b{color:var(--accent);}
+.wz-big{font-size:54px; line-height:1; text-align:center;}
+.wz-badge{align-self:flex-start; font-size:12px; font-weight:800; color:var(--brand-deep); background:var(--brand-soft); border-radius:999px; padding:3px 12px;}
+.wz-choices{display:grid; gap:12px;}
+.wz-card{display:flex; gap:14px; align-items:center; text-align:left; width:100%; padding:16px; border:2px solid var(--line); background:#fff; color:var(--ink); border-radius:16px; font:inherit; cursor:pointer; transition:.12s;}
+.wz-card:hover{border-color:var(--brand);}
+.wz-card.on{border-color:var(--brand); background:var(--brand-soft);}
+.wz-choices.sm .wz-card{padding:12px 14px;}
+.wz-ico{font-size:30px; line-height:1; flex:0 0 auto;}
+.wz-tx{flex:1; min-width:0;}
+.wz-tx b{display:block; font-size:17px; line-height:1.4;}
+.wz-tx .s{display:block; font-size:13px; color:var(--ink-soft); line-height:1.6; margin-top:2px;}
+.wz-chk{width:28px; height:28px; border-radius:50%; border:2px solid var(--line); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; flex:0 0 auto;}
+.wz-card.on .wz-chk{background:var(--brand); border-color:var(--brand);}
+.wz-nav{position:sticky; bottom:0; display:flex; gap:10px; align-items:center; justify-content:flex-end; flex-wrap:wrap; padding:10px 0 4px; background:linear-gradient(rgba(238,242,244,0), var(--bg) 35%);}
+.wz-next{flex:1 1 220px; border:0; border-radius:14px; padding:16px; background:var(--brand); color:#fff; font:inherit; font-size:17px; font-weight:800; cursor:pointer; min-height:54px;}
+.wz-next:hover{background:var(--brand-deep);}
+.wz-next:disabled{opacity:.4; cursor:not-allowed;}
+.wz-sub{border:1.5px solid var(--brand); background:#fff; color:var(--brand-deep); border-radius:12px; padding:12px 16px; font:inherit; font-size:15px; font-weight:800; cursor:pointer; align-self:flex-start;}
+.wz-link{border:0; background:transparent; color:var(--brand-deep); text-decoration:underline; font:inherit; font-size:13.5px; cursor:pointer; padding:8px 4px;}
+.wz-home{align-self:center; margin-top:6px;}
+.wz-count{font-size:15px; color:var(--ink-soft);}
+.wz-count b{font-size:26px; color:var(--brand-deep);}
+.wz-box{border:1px solid var(--line); background:#fff; border-radius:14px; padding:14px; display:flex; flex-direction:column; gap:10px;}
+.wz-box ul{margin:6px 0 0; padding-left:1.3em; font-size:14px; line-height:1.8;}
+.wz-box textarea, .wz-box input[type=text], .wz-box input[type=password]{font-size:16px;}
+.wz-form label{margin:4px 0 0; font-size:13px;}
+.wz-form label.chk{margin-top:6px;}
+.wz-last{font-size:13px; color:var(--ink-soft); background:#fff; border:1px dashed var(--line); border-radius:10px; padding:6px 12px;}
+.wz-warn{background:var(--accent-soft); color:var(--brand-deep); border-radius:12px; padding:12px 14px; font-size:13.5px; line-height:1.8;}
+.wz-note{font-size:13px; color:var(--ink-soft); line-height:1.8;}
+.wz-err{color:var(--accent); font-weight:700; font-size:13.5px; min-height:1.2em;}
+.wz-list{display:grid; gap:8px;}
+.wz-li{display:flex; align-items:center; gap:12px; background:#fff; border:1px solid var(--line); border-radius:12px; padding:10px 12px;}
+.wz-li .wz-ico{font-size:24px;}
+.wz-tags{display:flex; flex-direction:column; gap:3px; align-items:flex-end;}
+.wz-tags i{font-style:normal; font-size:11.5px; font-weight:800; background:var(--brand-soft); color:var(--brand-deep); border-radius:6px; padding:1px 8px; white-space:nowrap;}
+.wz-tags i.w{background:var(--accent-soft); color:var(--accent);}
+.wz-adv{background:#fff; border:1px solid var(--line); border-radius:12px; padding:10px 14px;}
+.wz-adv summary{cursor:pointer; font-size:14px; font-weight:800; color:var(--brand-deep);}
+.wz-adv label{display:block; margin:12px 0 6px; font-size:13px;}
+.wz-seg{display:flex; flex-wrap:wrap; gap:6px;}
+.wz-seg button{border:1.5px solid var(--line); background:#fff; color:var(--ink); border-radius:10px; padding:9px 12px; font:inherit; font-size:13.5px; font-weight:700; cursor:pointer;}
+.wz-seg button.on{border-color:var(--brand); background:var(--brand); color:#fff;}
+.wz-lbl{font-size:13px; font-weight:700; color:var(--ink-soft);}
+.wz-out{white-space:pre-wrap; word-break:break-all; background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px; font-size:13.5px; max-height:46vh; overflow:auto; margin:0;}
+#vHelp{position:fixed; inset:0; z-index:200; display:none; align-items:center; justify-content:center; background:rgba(8,14,30,.7); padding:12px;}
+#vHelp.open{display:flex;}
+#vHelp .box{background:#fff; max-width:720px; width:100%; max-height:92vh; overflow:auto; border-radius:16px; padding:16px 18px 20px;}
+body.is-vault-view{background:var(--bg);}
+
+body.is-vault-view #toast{bottom:92px;}
 </style>
 </head>
 <body class="is-hero">
@@ -386,27 +453,15 @@ pre.out{white-space:pre-wrap; word-break:break-all; background:#f4f7f8; border:1
   </div>
 </section>
 
-<!-- ============ データ保管QRメーカー ============ -->
+<!-- ============ データ保管QRメーカー(プレゼン形式) ============ -->
 <div id="viewVault" class="view" hidden>
-<div class="v-wrap">
-  <button type="button" class="back-btn" data-go="hero">← トップへ戻る</button>
-  <div class="v-head">
-    <h1>🗄 データ保管QRメーカー</h1>
-    <p class="lede">スマホのデータをQRコードにして紙で保管するためのツールです。作ったQRを「トレイ」に溜めて、まとめて印刷 → 印刷後に全データを削除します。</p>
-  </div>
-  <ol class="flow">
-    <li>データを入力・取り込む</li>
-    <li>QRの設定(圧縮・暗号化・半分カット)</li>
-    <li>トレイに溜める</li>
-    <li>試し読み → 印刷</li>
-    <li>全データ削除</li>
-  </ol>
+  <div class="wz" id="vStage"></div>
+  <input type="file" id="vFile" accept=".vcf,.csv,.tsv,.txt,text/*" multiple style="display:none">
+</div>
+<div id="vHelp" role="dialog" aria-modal="true" aria-label="くわしい説明">
+  <div class="box guide">
+    <div class="btnrow" style="justify-content:space-between;align-items:center;margin:0 0 6px;"><b style="font-size:16px;">📖 くわしい説明</b><button type="button" class="vb" id="helpClose">✕ 閉じる</button></div>
 
-  <div class="alert">⚠ <b>ここに入力するのは、パスワードなどの機密情報です。</b>周りに人がいない場所で、機内モード(または通信を切った状態)で作業してください。書き出したCSV／vCardファイルは中身が丸見えなので、取り込んだらすぐ削除します。</div>
-
-  <!-- 手順・ガイド -->
-  <details class="vd guide" id="guideBox">
-    <summary>📖 手順・文字数・圧縮のしくみ(はじめに読んでください)</summary>
     <h3>① スマホからデータを書き出す</h3>
     <ul>
       <li><b>電話帳</b>:iPhone＝「連絡先」または iCloud.com から vCard(.vcf)を書き出し／Android＝「連絡先」アプリ → 設定 → エクスポート(.vcf)、または Google連絡先からCSV。</li>
@@ -415,7 +470,7 @@ pre.out{white-space:pre-wrap; word-break:break-all; background:#f4f7f8; border:1
       <li><b>その他</b>:2段階認証のバックアップコード、Wi-Fi、SIMの暗証番号、契約番号などは、各タブに入力します。文字にできるものは、自由メモに何でも入れられます。</li>
     </ul>
     <h3>② 取り込み方</h3>
-    <p>各タブの「ファイルを選ぶ」(.vcf／.csv／.txt)か、「貼り付けて取り込む」を使います。1行1件、項目はタブまたはカンマ区切りです。データは追加されるので、何回かに分けて取り込めます。</p>
+    <p>「ファイルを選ぶ」(.vcf／.csv／.txt)か、「貼り付ける」を使います。1行1件、項目はタブまたはカンマ区切りです。何回かに分けて取り込めます。</p>
     <h3>③ QRにするときの文字数・容量</h3>
     <p>QRコード1枚に入る量には限りがあります(最大サイズ・バイトモード)。<b>日本語は1文字が約3バイト、半角英数字は1バイト</b>です。</p>
     <table>
@@ -431,7 +486,7 @@ pre.out{white-space:pre-wrap; word-break:break-all; background:#f4f7f8; border:1
       <li><b>圧縮(deflate)</b>:データを小さくしてから、文字(Base64)に直してQRに入れます。Base64で約1.33倍に増えるため、<b>圧縮しても小さくならないデータは、そのまま(テキスト)で入れます。</b>電話帳のように同じ文字が多いデータほど効果があります。</li>
       <li><b>テキストのまま</b>:スマホの標準カメラで読むと、中身がそのまま表示されます。復元ツールが不要で、いちばん確実です。</li>
       <li><b>暗号化(AES-256-GCM)</b>:パスフレーズから鍵を作って暗号化します。<b>パスフレーズを忘れると、誰にも復元できません。</b>パスフレーズはQRと別の場所(記憶・別の紙)に保管してください。</li>
-      <li>圧縮・暗号化したQRは、スマホで読み取った文字を、このツールの「④ 復元」に貼り付けると元に戻ります。</li>
+      <li>圧縮・暗号化したQRは、スマホで読み取った文字を、このツールの「QRから元に戻す」に貼り付けると元に戻ります。</li>
     </ul>
     <h3>⑤ 重要なデータは「半分に切って別々に保管」</h3>
     <p>パスワードや2段階認証コードのQRは、<b>「半分カット」</b>で印刷できます。左半分(A)と右半分(B)が別のページに印刷されるので、切り取って<b>別々の場所(例:自宅の金庫と、実家や貸金庫)</b>に保管します。片方だけでは読めません。読むときは、2枚を赤い目印をそろえて平らに合わせ(テープで裏から仮止め)、スマホで読み取ります。さらに暗号化すると、万一2枚そろっても、パスフレーズなしでは読めません。</p>
@@ -445,81 +500,11 @@ pre.out{white-space:pre-wrap; word-break:break-all; background:#f4f7f8; border:1
     </ul>
     <h3>⑦ 印刷後にすること</h3>
     <ul>
-      <li>この画面の「全データ削除」で、入力データ・QR・ローカルストレージ・コピーした内容を消去します。</li>
+      <li>印刷のあとに出る「すべて削除する」で、入力データ・QR・ローカルストレージ・コピーした内容を消去します。</li>
       <li>手作業で消すもの:書き出したCSV／vCardファイル(ゴミ箱も空に)、ブラウザの閲覧履歴、プリンターの印刷履歴、PDFで保存した場合はそのPDF。</li>
     </ul>
-  </details>
-
-  <!-- ① 入力 -->
-  <section class="vcard">
-    <h2><span class="stepno">1</span> データを入力・取り込む</h2>
-    <p class="sub">入力した内容は、この画面を閉じるか「全データ削除」を押すと消えます(トレイに溜めたQRだけが、設定により端末に残ります)。</p>
-    <div class="tabs" id="vTabs"></div>
-    <div id="vPanel"></div>
-  </section>
-
-  <!-- ② 設定 -->
-  <section class="vcard">
-    <h2><span class="stepno">2</span> QRの設定</h2>
-    <p class="sub">QRにする項目を選び、圧縮・暗号化・半分カットなどを決めます。</p>
-    <div class="opts">
-      <div class="full"><label>QRにする項目</label><div id="vSel" class="checks"></div></div>
-      <div><label for="oGroup">セットの分け方</label>
-        <select id="oGroup"><option value="sep">項目ごとに別々のQRセット(おすすめ)</option><option value="merge">選んだ項目を1つのQRセットにまとめる</option></select></div>
-      <div><label for="oSize">1枚あたりの容量</label>
-        <select id="oSize"><option value="400">小:約400バイト(読み取りやすい・枚数は増える)</option><option value="800" selected>標準:約800バイト</option><option value="1400">大:約1,400バイト(細かい・枚数は減る)</option></select></div>
-      <div><label for="oLevel">誤り訂正レベル</label>
-        <select id="oLevel"><option value="L">L(容量最大)</option><option value="M" selected>M(標準)</option><option value="Q">Q(汚れに強い)</option><option value="H">H(最も強い)</option></select></div>
-      <div><label for="oComp">圧縮</label>
-        <select id="oComp"><option value="auto" selected>自動(小さくなるときだけ圧縮)</option><option value="off">しない(スマホのカメラで直接読める)</option></select></div>
-      <div><label for="oEncScope">パスフレーズで暗号化</label>
-        <select id="oEncScope"><option value="imp" selected>重要な項目だけ(おすすめ)</option><option value="all">すべて</option><option value="none">しない</option></select></div>
-      <div><label for="oPass">パスフレーズ(8文字以上・QRと別に保管)</label>
-        <input type="password" id="oPass" autocomplete="new-password" placeholder="暗号化するときだけ入力"></div>
-      <div><label for="oHalfScope">半分カット(左右に分けて別々に印刷)</label>
-        <select id="oHalfScope"><option value="imp" selected>重要な項目だけ(おすすめ)</option><option value="all">すべて</option><option value="none">しない</option></select></div>
-      <div><label for="oStore">QRトレイの保存先</label>
-        <select id="oStore"><option value="ls" selected>この端末(ローカルストレージ)に一時保存して溜める</option><option value="mem">保存しない(この画面を開いている間だけ)</option></select></div>
-    </div>
-    <p class="hint" id="oEncNote"></p>
-    <div class="plan-wrap"><table class="plan" id="vPlan"></table></div>
-    <div class="btnrow"><button type="button" class="vb pri" id="btnAdd">➕ QRを作ってトレイに溜める</button></div>
-    <p class="hint">ボタンを押すと、選んだ項目からQRセットを作ります。入力欄のデータは、そのまま残ります(あとで追加・修正して、作り直せます)。</p>
-  </section>
-
-  <!-- ③ トレイ -->
-  <section class="vcard">
-    <h2><span class="stepno">3</span> QRトレイ(溜めたQR)と印刷</h2>
-    <p class="sub">溜まったQRを、まとめて印刷します。印刷前に、必ず1枚スマホで試し読みしてください。</p>
-    <div id="vTray"></div>
-    <div class="opts">
-      <div><label for="pSize">QRの印刷サイズ(1辺)</label>
-        <select id="pSize"><option value="40">40mm</option><option value="50" selected>50mm</option><option value="60">60mm</option><option value="70">70mm</option></select></div>
-      <div><label class="chk" style="margin-top:22px;"><input type="checkbox" id="pCover" checked> 目次ページ(何が入っているか・使い方)を付ける</label></div>
-    </div>
-    <p class="hint" id="pWarn"></p>
-    <div class="btnrow">
-      <button type="button" class="vb pri" id="btnPrintV">🖨 トレイのQRを、すべて印刷</button>
-      <button type="button" class="vb dng" id="btnWipeV">🧹 印刷が終わった → 全データ削除</button>
-    </div>
-  </section>
-
-  <!-- ④ 復元 -->
-  <section class="vcard">
-    <h2><span class="stepno">4</span> 復元(試し読み・実際に使うとき)</h2>
-    <p class="sub">スマホのカメラでQRを読み取り、表示された文字をコピーして、ここに貼り付けます。1枚ずつ「追加」してください。全部そろうと復元できます。</p>
-    <label for="vrIn">読み取った文字(1枚分ずつ)</label>
-    <textarea id="vrIn" rows="3" placeholder="QV1.… で始まる文字を貼り付け"></textarea>
-    <div class="btnrow"><button type="button" class="vb" id="btnPartAdd">この1枚を追加</button><button type="button" class="vb dng" id="btnPartClear">追加した分をクリア</button></div>
-    <div id="vrList"></div>
-    <div class="opts"><div><label for="vrPass">パスフレーズ(暗号化したときだけ)</label><input type="password" id="vrPass" autocomplete="off"></div></div>
-    <div class="btnrow"><button type="button" class="vb pri" id="btnRestore">復元する</button></div>
-    <div id="vrOutWrap" hidden>
-      <pre class="out" id="vrOut"></pre>
-      <div class="btnrow"><button type="button" class="vb" id="btnRCopy">📋 コピー</button><button type="button" class="vb" id="btnRSave">💾 テキストで保存</button><button type="button" class="vb dng" id="btnRClear">画面から消す</button></div>
-    </div>
-  </section>
-</div>
+  
+  </div>
 </div>
 
 <!-- ============ 全データ削除ダイアログ ============ -->
@@ -3720,6 +3705,7 @@ function show(v){
   curView=v;
   Object.keys(VIEWS).forEach(function(k){ $(VIEWS[k]).hidden=(k!==v); });
   document.body.classList.toggle("is-hero",v==="hero");
+  document.body.classList.toggle("is-vault-view",v==="vault");
   window.scrollTo(0,0);
   try{ history.replaceState(null,"",v==="hero"?location.pathname+location.search:"#"+v); }catch(e){}
 }
@@ -3729,29 +3715,26 @@ Array.prototype.forEach.call(document.querySelectorAll("[data-go]"),function(b){
 var toastTimer;
 function toast(msg){ var t=$("toast"); if(!t) return; t.textContent=msg; t.classList.add("show"); clearTimeout(toastTimer); toastTimer=setTimeout(function(){ t.classList.remove("show"); },2600); }
 
-/* ---------- データ定義 ---------- */
+/* ---------- データ定義(やさしく4項目に整理) ---------- */
 var CATS=[
- {id:"contacts",ico:"📒",name:"電話帳",imp:false,fields:["名前","電話","メール","メモ"],
-  hint:"電話帳のvCard(.vcf)かCSVを選ぶか、貼り付けます。名前・電話・メール・会社・住所などを自動で振り分けます。"},
- {id:"logins",ico:"🔑",name:"アプリ・サービスのID/パスワード",imp:true,fields:["サービス名","URL","ID","パスワード","補足"],
-  hint:"パスワード管理(Chrome／iCloudキーチェーン／1Password／Bitwarden等)から書き出したCSVを選べます。補足には、秘密の質問・2段階認証の方法などを書きます。"},
- {id:"apps",ico:"📱",name:"アプリ一覧(URL)",imp:false,fields:["アプリ名","URL","メモ"],
-  hint:"1行1件で「アプリ名 URL」のように貼り付けます(例:LINE https://line.me/)。URLだけの行も取り込めます。"},
- {id:"twofa",ico:"🛡",name:"2段階認証・リカバリーコード",imp:true,fields:["サービス名","コード・秘密鍵","補足"],
-  hint:"バックアップコード、認証アプリの秘密鍵(セットアップキー)、パスキー・リカバリーキーなど。これが漏れるとアカウントを奪われます。"},
- {id:"device",ico:"📶",name:"端末・回線・Wi-Fi",imp:true,fields:["項目","内容","補足"],
-  hint:"端末の暗証番号、SIMのPIN、Wi-FiのSSIDとパスワード、ルーターの管理画面のID／パスワード、Apple ID／Googleアカウントの復旧情報など。"},
- {id:"money",ico:"🏦",name:"金融・保険・契約",imp:true,fields:["項目","番号・内容","連絡先・補足"],
-  hint:"銀行・証券・保険・年金・携帯の契約番号と連絡先など。カード番号の全桁・暗証番号・暗号資産のシードフレーズは、必ず暗号化＋半分カットで。"},
- {id:"notes",ico:"📝",name:"自由メモ(その他のテキスト)",imp:false,fields:["タイトル","本文"],
-  hint:"上のどれにも当てはまらない、文字にできるものは何でも。テキストファイル(.txt)を選ぶと、1件のメモとして入れられます。"}
+ {id:"contacts",ico:"📒",name:"電話帳",sub:"名前・電話番号・メール",imp:false,fields:["名前","電話","メール","メモ"],
+  how:"スマホの電話帳を、vCard(.vcf)かCSVで書き出したファイルを選ぶのが、いちばん楽です。"},
+ {id:"logins",ico:"🔑",name:"アプリ・サイトのID／パスワード",sub:"アプリやサイトのURL、ID、パスワード",imp:true,fields:["サービス名","URL","ID","パスワード","補足"],
+  how:"パスワード管理(Chrome・iPhone・1Password等)から書き出したCSVを選べます。アプリ名とURLだけの一覧でもOKです。"},
+ {id:"codes",ico:"🛡",name:"大事な番号・コード",sub:"2段階認証の復旧コード・Wi-Fi・暗証番号・契約番号",imp:true,fields:["項目","内容","補足"],
+  how:"2段階認証のバックアップコード、Wi-Fiのパスワード、SIMの暗証番号、口座・保険の契約番号など。1件ずつ入れるのがおすすめです。"},
+ {id:"notes",ico:"📝",name:"メモ(そのほか)",sub:"文字にできるものは何でも",imp:false,fields:["タイトル","本文"],
+  how:"文字にできるものなら何でも入れられます。テキストファイル(.txt)を選ぶと、1件のメモとして入ります。"}
 ];
-var LONGF={"本文":1,"コード・秘密鍵":1,"補足":1,"メモ":1,"内容":1,"連絡先・補足":1,"番号・内容":1};
+var LONGF={"本文":1,"補足":1,"内容":1,"メモ":1};
 var data={}; CATS.forEach(function(c){ data[c.id]=[]; });
 var catOf=function(id){ for(var i=0;i<CATS.length;i++) if(CATS[i].id===id) return CATS[i]; return null; };
-var curCat="contacts", page={}, PER=20;
 var tray=[];
 var restoreSets={};
+function nonEmpty(id){ return data[id].filter(function(r){ return r.some(function(x){ return String(x||"").trim()!==""; }); }); }
+/* 画面の状態(S) */
+var S={step:"start",hist:[],cats:{},queue:[],qi:0,mode:{},pasteText:"",level:"rec",pass:"",pass2:"",showPass:false,
+  size:800,ecc:"M",comp:true,store:"ls",psize:50,rtext:"",rpass:"",rout:"",lastBuilt:null,lastAdded:{}};
 
 /* ---------- CSV / vCard 読み込み ---------- */
 function parseCSV(t,delim){
@@ -3836,7 +3819,7 @@ function importText(catId,text,fname){
   if(!text.trim()){ toast("取り込む内容がありません"); return; }
   if(/BEGIN:VCARD/i.test(text)){ rows=parseVcf(text); }
   else if(catId==="notes"){ rows=[[fname||"貼り付けメモ",text.trim()]]; }
-  else if(catId==="apps"&&!/,|\t/.test(text.split("\n")[0]||"")){
+  else if((catId==="apps"||catId==="logins")&&!/,|\t/.test(text.split("\n")[0]||"")){
     rows=text.split(/\r?\n/).map(function(l){ return l.trim(); }).filter(Boolean).map(function(l){
       var m=l.match(/^(.*?)\s*(https?:\/\/\S+)\s*(.*)$/);
       if(m) return [m[1].trim()||m[2].replace(/^https?:\/\//,"").split("/")[0],m[2],m[3]||""];
@@ -3848,56 +3831,7 @@ function importText(catId,text,fname){
   }
   rows.forEach(function(r){ if(r.some(function(x){ return String(x||"").trim(); })){ data[catId].push(r.map(function(x){ return String(x==null?"":x); })); added++; } });
   toast(c.name+":"+added+"件を取り込みました");
-  renderAll();
-}
-
-/* ---------- 入力UI ---------- */
-function dataCount(){ var n=0; CATS.forEach(function(c){ n+=nonEmpty(c.id).length; }); return n; }
-function nonEmpty(id){ return data[id].filter(function(r){ return r.some(function(x){ return String(x||"").trim()!==""; }); }); }
-function renderTabs(){
-  var h=""; CATS.forEach(function(c){
-    h+='<button type="button" class="tab'+(c.id===curCat?" on":"")+'" data-cat="'+c.id+'">'+c.ico+" "+esc(c.name)+'<span class="cnt">'+nonEmpty(c.id).length+'件</span>'+(c.imp?'<span class="imp">重要</span>':"")+'</button>';
-  });
-  $("vTabs").innerHTML=h;
-  Array.prototype.forEach.call($("vTabs").querySelectorAll(".tab"),function(b){ b.onclick=function(){ curCat=b.getAttribute("data-cat"); renderTabs(); renderPanel(); }; });
-}
-function renderPanel(){
-  var c=catOf(curCat), rows=data[c.id], pg=page[c.id]||0, pages=Math.max(1,Math.ceil(rows.length/PER));
-  if(pg>=pages) pg=pages-1; page[c.id]=pg;
-  var h='<p class="hint" style="margin:0 0 8px;">'+esc(c.hint)+'</p>';
-  if(c.imp) h+='<div class="alert">🔒 <b>重要な項目です。</b>QRの設定で「暗号化」と「半分カット」を使うことをおすすめします。</div>';
-  h+='<div class="btnrow"><input type="file" id="fileIn" accept=".vcf,.csv,.tsv,.txt,text/*" multiple style="display:none"><button type="button" class="vb" id="btnFile">📂 ファイルを選んで取り込む</button><button type="button" class="vb" id="btnPasteToggle">📋 貼り付けて取り込む</button><button type="button" class="vb" id="btnRowAdd">＋ 1件追加</button><button type="button" class="vb dng" id="btnCatClear">この項目をすべて消す</button></div>';
-  h+='<div id="pasteBox" hidden><textarea id="pasteTa" rows="5" placeholder="ここに貼り付け(1行1件。項目はタブまたはカンマ区切り。項目順:'+esc(c.fields.join("、"))+')"></textarea><div class="btnrow"><button type="button" class="vb pri" id="btnPasteGo">取り込む</button></div></div>';
-  h+='<div class="pager">全 '+rows.length+' 件'+(rows.length>PER?' ／ <button type="button" class="vb" id="pgPrev"'+(pg<=0?" disabled":"")+'>◀</button> '+(pg+1)+' / '+pages+' <button type="button" class="vb" id="pgNext"'+(pg>=pages-1?" disabled":"")+'>▶</button>':"")+'</div>';
-  var start=pg*PER, end=Math.min(rows.length,start+PER);
-  for(var i=start;i<end;i++){
-    h+='<div class="vrow" data-i="'+i+'"><div class="rn">#'+(i+1)+'</div><button type="button" class="rdel" data-del="'+i+'" title="この1件を削除">✕</button><div class="rf" style="grid-template-columns:'+(c.fields.length>3?"repeat(auto-fit,minmax(150px,1fr))":"repeat(auto-fit,minmax(180px,1fr))")+'">';
-    c.fields.forEach(function(f,k){
-      h+='<div><label>'+esc(f)+'</label>'+(LONGF[f]&&c.id==="notes"?'<textarea rows="3" data-i="'+i+'" data-k="'+k+'">'+esc(rows[i][k]||"")+'</textarea>':'<input type="text" data-i="'+i+'" data-k="'+k+'" value="'+esc(rows[i][k]||"")+'">')+'</div>';
-    });
-    h+='</div></div>';
-  }
-  $("vPanel").innerHTML=h;
-  var P=$("vPanel");
-  $("btnFile").onclick=function(){ $("fileIn").click(); };
-  $("fileIn").onchange=function(e){
-    var files=Array.prototype.slice.call(e.target.files||[]); if(!files.length) return;
-    files.forEach(function(f){ var r=new FileReader(); r.onload=function(){ importText(c.id,String(r.result||""),f.name.replace(/\.[^.]+$/,"")); }; r.readAsText(f,"utf-8"); });
-    e.target.value="";
-  };
-  $("btnPasteToggle").onclick=function(){ $("pasteBox").hidden=!$("pasteBox").hidden; };
-  $("btnPasteGo").onclick=function(){ var ta=$("pasteTa"); importText(c.id,ta.value,"貼り付けメモ"); ta.value=""; };
-  $("btnRowAdd").onclick=function(){ data[c.id].push(c.fields.map(function(){ return ""; })); page[c.id]=Math.floor((data[c.id].length-1)/PER); renderAll(); };
-  $("btnCatClear").onclick=function(){ if(!rows.length) return; if(!window.confirm("「"+c.name+"」の入力済みデータ("+rows.length+"件)を、すべて消しますか？")) return; data[c.id]=[]; page[c.id]=0; renderAll(); };
-  if($("pgPrev")) $("pgPrev").onclick=function(){ page[c.id]=pg-1; renderPanel(); };
-  if($("pgNext")) $("pgNext").onclick=function(){ page[c.id]=pg+1; renderPanel(); };
-  Array.prototype.forEach.call(P.querySelectorAll("[data-del]"),function(b){ b.onclick=function(){ data[c.id].splice(+b.getAttribute("data-del"),1); renderAll(); }; });
-  Array.prototype.forEach.call(P.querySelectorAll("input[data-k],textarea[data-k]"),function(el){
-    el.addEventListener("input",function(){ data[c.id][+el.getAttribute("data-i")][+el.getAttribute("data-k")]=el.value; schedPlan(); renderTabsCountsOnly(); });
-  });
-}
-function renderTabsCountsOnly(){
-  Array.prototype.forEach.call($("vTabs").querySelectorAll(".tab"),function(b){ var c=catOf(b.getAttribute("data-cat")); b.querySelector(".cnt").textContent=nonEmpty(c.id).length+"件"; });
+  render();
 }
 
 /* ---------- シリアライズ ---------- */
@@ -3936,10 +3870,6 @@ async function decryptBytes(u8,pass){
 function rid(){ var a="abcdefghijkmnpqrstuvwxyz23456789",s="",r=crypto.getRandomValues(new Uint8Array(6)); for(var i=0;i<6;i++) s+=a[r[i]%a.length]; return s; }
 
 /* ---------- セット作成 ---------- */
-function opts(){
-  return {size:+$("oSize").value, level:$("oLevel").value, comp:$("oComp").value==="auto"&&HAS_CS, group:$("oGroup").value,
-    encScope:$("oEncScope").value, halfScope:$("oHalfScope").value, pass:$("oPass").value};
-}
 async function encodeSet(text,o,doEnc,real){
   var raw=utf8(text), comp=null, mode, payload=null, len;
   if(o.comp){ try{ comp=await deflate(raw); }catch(e){ comp=null; } }
@@ -3969,45 +3899,6 @@ function chunkPayload(mode,payload,maxB){
 function countParts(set,maxB){ return set.payload!=null?chunkPayload(set.mode,set.payload,maxB).length:Math.max(1,Math.ceil(set.len/maxB)); }
 function wantEnc(imp,o){ return o.encScope==="all"||(o.encScope==="imp"&&imp); }
 function wantHalf(imp,o){ return o.halfScope==="all"||(o.halfScope==="imp"&&imp); }
-function selectedGroups(o){
-  var sel=[]; CATS.forEach(function(c){ var cb=document.querySelector('#vSel input[data-c="'+c.id+'"]'); if(cb&&cb.checked&&nonEmpty(c.id).length) sel.push(c); });
-  if(!sel.length) return [];
-  if(o.group==="merge") return [{id:"merged",name:"まとめ("+sel.map(function(c){ return c.name; }).join("・")+")",short:"まとめ",imp:sel.some(function(c){ return c.imp; }),text:sel.map(catText).join(""),n:sel.reduce(function(a,c){ return a+nonEmpty(c.id).length; },0)}];
-  return sel.map(function(c){ return {id:c.id,name:c.name,short:c.name,imp:c.imp,text:catText(c),n:nonEmpty(c.id).length}; });
-}
-function renderSel(){
-  var keep={}; Array.prototype.forEach.call($("vSel").querySelectorAll("input"),function(i){ keep[i.getAttribute("data-c")]=i.checked; });
-  var h=""; CATS.forEach(function(c){ var n=nonEmpty(c.id).length;
-    h+='<label class="chk"><input type="checkbox" data-c="'+c.id+'"'+((keep[c.id]!==undefined?keep[c.id]:true)?" checked":"")+(n?"":" disabled")+'> '+c.ico+" "+esc(c.name)+' <span class="small">('+n+'件)</span>'+(c.imp?' <span class="flag w">重要</span>':"")+'</label>';
-  });
-  $("vSel").innerHTML=h;
-  Array.prototype.forEach.call($("vSel").querySelectorAll("input"),function(i){ i.onchange=schedPlan; });
-}
-var planTimer, planTok=0;
-function schedPlan(){ clearTimeout(planTimer); planTimer=setTimeout(renderPlan,250); }
-async function renderPlan(){
-  var tok=++planTok, o=opts(), gs=selectedGroups(o), maxB=Math.max(120,o.size-HDR_LEN), h="";
-  var encOk=HAS_SUBTLE, note="";
-  if(o.encScope!=="none"){
-    if(!HAS_SUBTLE) note="⚠ このブラウザ／開き方では暗号化機能が使えません。(https または保存したファイルを、Chrome／Safari／Edge等で開いてください)";
-    else if(o.pass.length<8) note="🔒 暗号化する項目があります。パスフレーズ(8文字以上)を入力してください。";
-    else note="🔒 パスフレーズは、QRや紙と別の場所(記憶・別の紙)に保管してください。忘れると復元できません。";
-  } else note="暗号化しない場合、紙を手に入れた人は、中身をそのまま読めます。重要な項目では暗号化をおすすめします。";
-  $("oEncNote").textContent=note;
-  h+="<tr><th>項目</th><th>件数</th><th>文字データ</th><th>QRに入れる形</th><th>QRの枚数</th><th>印刷</th></tr>";
-  var total=0;
-  for(var i=0;i<gs.length;i++){
-    var g=gs[i], de=wantEnc(g.imp,o)&&encOk, hf=wantHalf(g.imp,o);
-    var s=await encodeSet(g.text,o,de,false); if(tok!==planTok) return;
-    var np=countParts(s,maxB); total+=np;
-    var form={p:"テキストのまま",z:"圧縮(deflate)+Base64",e:"暗号化+Base64",x:"圧縮→暗号化+Base64"}[s.mode];
-    h+="<tr><td>"+esc(g.short)+(g.imp?' <span class="flag w">重要</span>':"")+"</td><td>"+g.n+"件</td><td>"+Math.round(s.rawLen/1024*10)/10+" KB<br><span class=\"small\">"+s.rawLen.toLocaleString()+"バイト</span></td><td>"+form+"<br><span class=\"small\">→ "+s.len.toLocaleString()+"バイト</span></td><td><b>"+np+"枚</b>"+(np>40?' <span class="flag w">多い</span>':"")+"</td><td>"+(hf?'<span class="flag w">✂ 半分カット</span>':'<span class="flag">通常</span>')+"</td></tr>";
-  }
-  if(!gs.length) h+='<tr><td colspan="6" class="small">QRにする項目がありません。上の「1. データを入力」で、先にデータを入れてください。</td></tr>';
-  else h+='<tr><td colspan="6"><b>合計:約 '+total+' 枚</b>'+(total>40?' (枚数が多いです。容量を「大」にするか、項目を絞ると減ります)':"")+'</td></tr>';
-  $("vPlan").innerHTML=h;
-}
-
 /* ---------- QR描画 ---------- */
 function qrSvg(text,level){
   var q=qrcode(0,level); q.addData(text); q.make();
@@ -4017,59 +3908,15 @@ function qrSvg(text,level){
   return {svg:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+t+' '+t+'" shape-rendering="crispEdges" preserveAspectRatio="none"><rect width="'+t+'" height="'+t+'" fill="#fff"/><path d="'+d+'" fill="#000"/></svg>',n:n,ver:(n-17)/4,total:t};
 }
 function header(id,i,n,mode,crc){ return "QV1."+id+"."+i+"."+n+"."+mode+"."+crc+"\n"; }
-
-async function buildItems(){
-  var o=opts(), gs=selectedGroups(o), items=[], maxB=Math.max(120,o.size-HDR_LEN);
-  var needEnc=gs.some(function(g){ return wantEnc(g.imp,o); });
-  if(needEnc){
-    if(!HAS_SUBTLE){ toast("このブラウザでは暗号化できません。暗号化を「しない」にするか、別のブラウザで開いてください"); return null; }
-    if(o.pass.length<8){ toast("パスフレーズを8文字以上で入力してください(暗号化する項目があります)"); $("oPass").focus(); return null; }
-  }
-  for(var i=0;i<gs.length;i++){
-    var g=gs[i], de=wantEnc(g.imp,o), hf=wantHalf(g.imp,o);
-    var s=await encodeSet(g.text,o,de,true), crc=crc32(utf8(s.payload)), id=rid();
-    var ch=chunkPayload(s.mode,s.payload,maxB), N=ch.length;
-    var parts=ch.map(function(p,k){ return header(id,k+1,N,s.mode,crc)+p; });
-    // 描画できるか確認(容量オーバーを先に検出)
-    for(var k=0;k<parts.length;k++){ try{ qrSvg(parts[k],o.level); }catch(e){ toast("容量が大きすぎてQRにできません。「1枚あたりの容量」を小さくしてください"); return null; } }
-    items.push({id:id,cat:g.id,name:g.short,imp:g.imp,mode:s.mode,enc:(s.mode==="e"||s.mode==="x"),half:hf,level:o.level,n:g.n,N:N,t:Date.now(),parts:parts});
-  }
-  return items;
-}
-
 /* ---------- トレイ ---------- */
 function saveTray(){
   try{
-    if($("oStore").value==="mem"){ localStorage.removeItem(KEY_TRAY); return; }
+    if(S.store==="mem"){ localStorage.removeItem(KEY_TRAY); return; }
     localStorage.setItem(KEY_TRAY,JSON.stringify(tray));
   }catch(e){ toast("端末への保存に失敗しました(容量不足の可能性)。印刷してから追加してください"); }
 }
 function loadTray(){ try{ var r=localStorage.getItem(KEY_TRAY); if(r){ var a=JSON.parse(r); if(Array.isArray(a)) tray=a; } }catch(e){} }
 var fmtD=function(t){ var d=new Date(t); return d.getFullYear()+"/"+(d.getMonth()+1)+"/"+d.getDate(); };
-function renderTray(){
-  var h="";
-  if(!tray.length) h='<p class="small" style="margin:6px 0 12px;">トレイは空です。「2. QRの設定」でQRを作ると、ここに溜まります。</p>';
-  tray.forEach(function(it,idx){
-    var svg=""; try{ svg=qrSvg(it.parts[0],it.level).svg; }catch(e){ svg=""; }
-    h+='<div class="tray-item"><div class="ti-qr">'+svg+'</div><div><b>'+esc(it.name)+'</b><div class="ti-m">'+it.n+'件 ／ QR '+it.N+'枚 ／ セットID <code>'+it.id+'</code> ／ '+fmtD(it.t)+'<br>'+(it.enc?'<span class="flag">🔒 暗号化</span>':'<span class="flag w">暗号化なし</span>')+(it.half?'<span class="flag w">✂ 半分カット</span>':"")+'<span class="flag">'+({p:"テキスト",z:"圧縮",e:"暗号化",x:"圧縮+暗号化"}[it.mode])+'</span><span class="flag">訂正'+it.level+'</span></div></div><div class="ti-act"><button type="button" class="vb dng" data-rm="'+idx+'">削除</button></div></div>';
-  });
-  $("vTray").innerHTML=h;
-  Array.prototype.forEach.call($("vTray").querySelectorAll("[data-rm]"),function(b){ b.onclick=function(){ tray.splice(+b.getAttribute("data-rm"),1); saveTray(); renderTray(); }; });
-  var total=tray.reduce(function(a,t){ return a+t.N; },0);
-  $("btnPrintV").disabled=!tray.length; $("btnPrintV").textContent="🖨 トレイのQR("+total+"枚)を、すべて印刷";
-  updatePWarn();
-}
-function updatePWarn(){
-  var mm=+$("pSize").value, worst=0, wv=0;
-  tray.forEach(function(it){ it.parts.forEach(function(p){ try{ var r=qrSvg(p,it.level); var per=mm/r.total; if(!worst||per<worst){ worst=per; wv=r.ver; } }catch(e){} }); });
-  var w="";
-  if(worst){ w="いちばん細かいQR:バージョン"+wv+"、1マスあたり約"+(Math.round(worst*100)/100)+"mm。";
-    if(worst<0.33) w+=" ⚠ 細かすぎて、読み取りにくい可能性があります。印刷サイズを大きくするか、1枚あたりの容量を「小」にして作り直してください。";
-    else if(worst<0.42) w+=" やや細かいです。高解像度のプリンターで印刷し、試し読みしてください。";
-    else w+=" 読み取りに十分な大きさです。"; }
-  $("pWarn").textContent=w;
-}
-
 /* ---------- 印刷 ---------- */
 function cellHtml(it,part,k,mm,side){
   var r; try{ r=qrSvg(part,it.level); }catch(e){ return ""; }
@@ -4080,8 +3927,8 @@ function cellHtml(it,part,k,mm,side){
   return '<div class="qc" style="width:'+(w+4)+'mm"><div class="qs" style="width:'+w+'mm;height:'+mm+'mm">'+r.svg.replace("<svg ",'<svg style="'+svgStyle+'width:'+mm+'mm;height:'+mm+'mm" ')+tick+'</div><div class="ql">'+lab+'</div></div>';
 }
 function buildPrint(){
-  var mm=+$("pSize").value, h="", normal=tray.filter(function(t){ return !t.half; }), halves=tray.filter(function(t){ return t.half; });
-  if($("pCover").checked){
+  var mm=S.psize, h="", normal=tray.filter(function(t){ return !t.half; }), halves=tray.filter(function(t){ return t.half; });
+  if(true){
     h+='<div class="pg"><h2>紙のQR金庫 ― 保管QRの目次</h2><p class="pn">作成日:'+fmtD(Date.now())+'　／　このページに、パスワード・パスフレーズは書かないでください。</p><table><tr><th>項目</th><th>件数</th><th>QR枚数</th><th>形式</th><th>保管</th><th>セットID</th></tr>';
     tray.forEach(function(it){ h+='<tr><td>'+esc(it.name)+'</td><td>'+it.n+'</td><td>'+it.N+'</td><td>'+({p:"テキスト",z:"圧縮+Base64",e:"暗号化",x:"圧縮+暗号化"}[it.mode])+'</td><td>'+(it.half?"半分カット(A/Bを別々に)":"通常")+'</td><td>'+it.id+'</td></tr>'; });
     h+='</table><p class="pn" style="margin-top:5mm;"><b>使い方</b><br>① スマホの標準カメラで読み取ります。「テキスト」形式は、そのまま内容が表示されます。<br>② 圧縮・暗号化した形式は、読み取った文字(QV1.…で始まる)をコピーし、「紙のQR金庫」の「4.復元」に、1枚ずつ貼り付けます。暗号化は、パスフレーズも入力します。<br>③ 複数枚のセットは、全部そろえて復元します(順番は、ばらばらでも大丈夫です)。<br>④ 「半分カット」は、A(左半分)とB(右半分)の赤い目印をそろえて、平らに合わせて読み取ります。AとBは、別々の場所に保管します。<br>⑤ このQRを使ったあとは、紙を元の場所に戻し、パスワードを変更した場合は、新しいQRに作り直します。</p></div>';
@@ -4113,23 +3960,13 @@ function parseParts(text){
     return {id:h.id,i:h.i,n:h.n,mode:h.mode,crc:h.crc,payload:body};
   });
 }
-function renderRestore(){
-  var h="", ids=Object.keys(restoreSets);
-  if(!ids.length) h='<p class="small">まだ追加されていません。</p>';
-  ids.forEach(function(id){
-    var s=restoreSets[id], have=Object.keys(s.parts).map(Number).sort(function(a,b){ return a-b; }), miss=[];
-    for(var i=1;i<=s.n;i++) if(!s.parts[i]) miss.push(i);
-    h+='<div class="pstat">セット <code>'+id+'</code>(形式:'+({p:"テキスト",z:"圧縮",e:"暗号化",x:"圧縮+暗号化"}[s.mode])+')― '+have.length+' / '+s.n+' 枚 '+(miss.length?'<span class="miss">不足:'+miss.join("、")+'枚目</span>':'<span class="ok">そろいました</span>')+'</div>';
-  });
-  $("vrList").innerHTML=h;
-}
 function addParts(text){
   var ps=parseParts(text); if(!ps.length){ toast("QV1. で始まる文字が見つかりません。QRを読み取った文字を、そのまま貼り付けてください"); return; }
   ps.forEach(function(p){
     var s=restoreSets[p.id]||(restoreSets[p.id]={n:p.n,mode:p.mode,crc:p.crc,parts:{}});
     s.parts[p.i]=p.payload;
   });
-  toast(ps.length+"枚を追加しました"); renderRestore();
+  toast(ps.length+"枚を追加しました");
 }
 async function restore(){
   var ids=Object.keys(restoreSets); if(!ids.length){ toast("先に、QRの文字を追加してください"); return; }
@@ -4144,27 +3981,27 @@ async function restore(){
       if(s.mode==="p") bytes=utf8(payload);
       else if(s.mode==="z") bytes=await inflate(unb64(payload));
       else {
-        var pw=$("vrPass").value; if(!pw){ out.push("【セット "+id+"】暗号化されています。パスフレーズを入力してください"); continue; }
+        var pw=S.rpass; if(!pw){ out.push("【セット "+id+"】暗号化されています。パスフレーズを入力してください"); continue; }
         bytes=await decryptBytes(unb64(payload),pw); if(s.mode==="x") bytes=await inflate(bytes);
       }
       out.push("【セット "+id+"】\n"+dec.decode(bytes));
     }catch(e){ out.push("【セット "+id+"】復元できません。パスフレーズが違うか、データが壊れています"); }
   }
-  $("vrOut").textContent=out.join("\n\n"); $("vrOutWrap").hidden=false;
+  S.rout=out.join("\n\n"); go("rresult");
 }
-
 /* ---------- 全データ削除 ---------- */
 function wipeAll(){
-  CATS.forEach(function(c){ data[c.id]=[]; page[c.id]=0; });
+  CATS.forEach(function(c){ data[c.id]=[]; });
   tray=[]; restoreSets={};
-  Array.prototype.forEach.call(document.querySelectorAll("#viewVault input[type=text],#viewVault input[type=password],#viewVault textarea,#viewVault input[type=file]"),function(e){ e.value=""; });
-  $("vrOut").textContent=""; $("vrOutWrap").hidden=true; $("printRoot").innerHTML="";
+  S.cats={}; S.queue=[]; S.qi=0; S.mode={}; S.pasteText=""; S.pass=""; S.pass2=""; S.rtext=""; S.rpass=""; S.rout=""; S.lastBuilt=null; S.hist=[]; S.step="start";
+  $("printRoot").innerHTML=""; try{ $("vFile").value=""; }catch(e){}
   try{ Object.keys(localStorage).forEach(function(k){ if(/^(qrvault|mimamoriQR)/.test(k)) localStorage.removeItem(k); }); }catch(e){}
   try{ sessionStorage.clear(); }catch(e){}
   try{ if(window.__mimamoriWipe) window.__mimamoriWipe(); }catch(e){}
   try{ if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText("").catch(function(){}); }catch(e){}
-  renderAll();
+  render();
 }
+
 function openWipe(){ $("wipeT").textContent="🧹 印刷は終わりましたか？"; $("wipeBody").innerHTML=WIPE_Q; $("wipeYes").hidden=false; $("wipeNo").textContent="まだ(残す)"; $("wipeDlg").classList.add("open"); }
 var WIPE_Q="";
 function wipeDone(){
@@ -4173,40 +4010,287 @@ function wipeDone(){
   $("wipeYes").hidden=true; $("wipeNo").textContent="閉じる";
 }
 
-/* ---------- 全体の描画・イベント ---------- */
-function renderAll(){ renderTabs(); renderPanel(); renderSel(); renderTray(); schedPlan(); renderRestore(); }
-["oGroup","oSize","oLevel","oComp","oEncScope","oHalfScope"].forEach(function(id){ $(id).addEventListener("change",schedPlan); });
-$("oPass").addEventListener("input",schedPlan);
-if(!HAS_CS){ $("oComp").value="off"; $("oComp").disabled=true; }
-$("oStore").addEventListener("change",function(){ saveTray(); });
-$("pSize").addEventListener("change",updatePWarn);
-$("btnAdd").onclick=async function(){
-  var b=$("btnAdd"); b.disabled=true; var o=b.textContent; b.textContent="作成中…";
+/* ================= プレゼン形式の画面(1画面1つの選択) ================= */
+var FLOW=["pick","input","safety","pass","confirm"];
+function needEnc(){ return S.level==="strict"||(S.level==="rec"&&S.queue.some(function(id){ return catOf(id).imp; })); }
+function flowSteps(){ return FLOW.filter(function(s){ return s!=="pass"||needEnc(); }); }
+function go(step,noHist){ if(!noHist) S.hist.push(S.step); S.step=step; render(); window.scrollTo(0,0); }
+function back(){
+  if(S.step==="input"&&S.qi>0){ S.qi--; render(); window.scrollTo(0,0); return; }
+  var p=S.hist.pop();
+  if(p===undefined||p===S.step){ S.step="start"; S.hist=[]; }
+  else S.step=p;
+  if(S.step==="input"){ S.qi=Math.max(0,S.queue.length-1); }
+  render(); window.scrollTo(0,0);
+}
+function trayCount(){ return tray.reduce(function(a,t){ return a+t.N; },0); }
+function opts(){
+  return {size:S.size,level:S.ecc,comp:S.comp&&HAS_CS,
+    encScope:S.level==="easy"?"none":(S.level==="strict"?"all":"imp"),
+    halfScope:S.level==="easy"?"none":(S.level==="strict"?"all":"imp"),pass:S.pass};
+}
+function selectedGroups(){
+  return S.queue.filter(function(id){ return nonEmpty(id).length; }).map(function(id){ var c=catOf(id); return {id:c.id,name:c.name,short:c.name,imp:c.imp,text:catText(c),n:nonEmpty(id).length}; });
+}
+function encPossible(){ return HAS_SUBTLE; }
+
+/* ---------- 各画面の中身 ---------- */
+function card(a,ico,title,sub,on,extra){
+  return '<button type="button" class="wz-card'+(on?" on":"")+'" data-a="'+a+'"'+(extra||"")+'><span class="wz-ico">'+ico+'</span><span class="wz-tx"><b>'+title+'</b>'+(sub?'<span class="s">'+sub+'</span>':"")+'</span>'+(on!==undefined&&on!==null?'<span class="wz-chk">'+(on?"✔":"")+'</span>':"")+'</button>';
+}
+function stepStart(){
+  var h='<h1 class="wz-h">紙のQRで、データを守ります</h1><p class="wz-p">スマホのデータを、QRコードにして紙で保管します。ネットに置かないので、サイバー攻撃でも消えず、盗まれません。</p><div class="wz-choices">';
+  h+=card("create","🗄","QRをつくる","電話帳・パスワードなどを、QRにします");
+  h+=card("restore","🔍","QRから元に戻す","読み取った文字を貼り付けます");
+  if(tray.length) h+=card("toprint","🖨","つくったQRを印刷する","トレイに "+trayCount()+" 枚あります");
+  h+='</div>';
+  return {h:h,nav:""};
+}
+function stepPick(){
+  var h='<h1 class="wz-h">何を、保管しますか？</h1><p class="wz-p">あてはまるものを、すべて選んでください。</p><div class="wz-choices">';
+  CATS.forEach(function(c){ h+=card("tog",c.ico,c.name,c.sub,!!S.cats[c.id],' data-c="'+c.id+'"'); });
+  h+='</div>';
+  var n=CATS.filter(function(c){ return S.cats[c.id]; }).length;
+  return {h:h,nav:'<button type="button" class="wz-next" data-a="pickNext"'+(n?"":" disabled")+'>次へ →</button>'};
+}
+function stepInput(){
+  var id=S.queue[S.qi], c=catOf(id), n=nonEmpty(id).length, m=S.mode[id]||"";
+  var h='<div class="wz-badge">'+(S.qi+1)+' / '+S.queue.length+'</div><h1 class="wz-h">'+c.ico+" "+esc(c.name)+'</h1><p class="wz-p">'+esc(c.how)+'</p>';
+  h+='<div class="wz-count">いま <b>'+n+'</b> 件</div>';
+  if(!m){
+    h+='<div class="wz-choices sm">';
+    h+=card("file","📂","ファイルを選ぶ","書き出したファイル(.vcf／.csv／.txt)");
+    h+=card("paste","📋","貼り付ける","コピーした文字を、そのまま貼ります");
+    h+=card("manual","✏️","1件ずつ入力する","");
+    h+='</div>';
+  } else {
+    h+='<div class="wz-seg"><button type="button" data-a="file">📂 ファイル</button><button type="button" data-a="paste" class="'+(m==="paste"?"on":"")+'">📋 貼り付け</button><button type="button" data-a="manual" class="'+(m==="manual"?"on":"")+'">✏️ 1件ずつ</button></div>';
+  }
+  if(m==="paste") h+='<div class="wz-box"><textarea id="zPaste" rows="6" placeholder="1行1件。項目は、タブまたはカンマ区切り(順番:'+esc(c.fields.join("、"))+')">'+esc(S.pasteText)+'</textarea><button type="button" class="wz-sub" data-a="pasteGo">取り込む</button></div>';
+  if(m==="manual"){
+    h+='<div class="wz-box wz-form">';
+    c.fields.forEach(function(f,k){ h+='<label>'+esc(f)+(LONGF[f]?'':'')+'</label>'+(LONGF[f]&&id==="notes"?'<textarea id="zf'+k+'" rows="4"></textarea>':'<input type="text" id="zf'+k+'" autocomplete="off">'); });
+    h+='<button type="button" class="wz-sub" data-a="rowAdd">＋ この1件を追加</button></div>';
+  }
+  if(n){ var last=nonEmpty(id)[n-1]; h+='<div class="wz-last">最後の1件:'+esc(last.filter(Boolean).slice(0,3).join(" ／ ").slice(0,60))+' <button type="button" class="wz-link" data-a="undo">取り消す</button></div>'; }
+  var last2=S.qi>=S.queue.length-1;
+  return {h:h,nav:'<button type="button" class="wz-next" data-a="inNext"'+(n?"":" disabled")+'>'+(last2?"次へ →":"次の項目へ →")+'</button>',skip:'<button type="button" class="wz-link" data-a="inSkip">この項目はやめる</button>'};
+}
+function stepSafety(){
+  var h='<h1 class="wz-h">守りの強さを、選びます</h1><p class="wz-p">迷ったら「おすすめ」でだいじょうぶです。</p><div class="wz-choices">';
+  h+=card("lvl","👍","おすすめ","パスワードなど大事なものだけ、暗号化＋半分に切って別保管",S.level==="rec",' data-v="rec"');
+  h+=card("lvl","🛡","ぜんぶ厳重","すべてを、暗号化＋半分に切って別保管",S.level==="strict",' data-v="strict"');
+  h+=card("lvl","📷","かんたん","暗号化なし。スマホのカメラで、そのまま読める",S.level==="easy",' data-v="easy"');
+  h+='</div>';
+  if(S.level==="easy") h+='<div class="wz-warn">⚠ 暗号化しないと、紙を手に入れた人は、中身をそのまま読めます。電話帳だけなど、軽いデータ向けです。</div>';
+  return {h:h,nav:'<button type="button" class="wz-next" data-a="safetyNext">次へ →</button>',help:"lvl"};
+}
+function stepPass(){
+  var t=S.showPass?"text":"password";
+  var h='<h1 class="wz-h">パスフレーズを、決めます</h1><p class="wz-p">暗号化の「あいことば」です。<b>忘れると、誰にも元に戻せません。</b>QRの紙とは、別の場所に控えてください。</p>';
+  h+='<div class="wz-box wz-form"><label>パスフレーズ(8文字以上)</label><input type="'+t+'" id="zp1" autocomplete="new-password" value="'+esc(S.pass)+'"><label>もう一度</label><input type="'+t+'" id="zp2" autocomplete="new-password" value="'+esc(S.pass2)+'"><label class="chk"><input type="checkbox" id="zshow"'+(S.showPass?" checked":"")+'> 文字を表示する</label><div class="wz-err" id="zperr"></div></div>';
+  h+='<p class="wz-note">長めの文章(例:好きな歌の一節)が、覚えやすく、強いです。</p>';
+  return {h:h,nav:'<button type="button" class="wz-next" data-a="passNext">次へ →</button>'};
+}
+function stepConfirm(){
+  var h='<h1 class="wz-h">この内容で、QRをつくります</h1><div id="cfList" class="wz-list"><p class="wz-p">計算中…</p></div>';
+  h+='<details class="wz-adv"><summary>くわしい設定(ふつうは変えなくてOK)</summary>';
+  h+='<label>1枚のQRに入れる量</label><div class="wz-seg" data-seg="size">'+[[400,"小(読み取りやすい)"],[800,"ふつう"],[1400,"大(枚数が少ない)"]].map(function(o){ return '<button type="button" class="'+(S.size===o[0]?"on":"")+'" data-a="adv" data-k="size" data-v="'+o[0]+'">'+o[1]+'</button>'; }).join("")+'</div>';
+  h+='<label>汚れへの強さ(誤り訂正)</label><div class="wz-seg">'+[["L","弱(容量大)"],["M","ふつう"],["Q","強い"],["H","最強(容量小)"]].map(function(o){ return '<button type="button" class="'+(S.ecc===o[0]?"on":"")+'" data-a="adv" data-k="ecc" data-v="'+o[0]+'">'+o[1]+'</button>'; }).join("")+'</div>';
+  if(HAS_CS) h+='<label>圧縮</label><div class="wz-seg">'+[[1,"自動(小さくなるとき)"],[0,"しない(カメラで直接読める)"]].map(function(o){ return '<button type="button" class="'+((S.comp?1:0)===o[0]?"on":"")+'" data-a="adv" data-k="comp" data-v="'+o[0]+'">'+o[1]+'</button>'; }).join("")+'</div>';
+  h+='<label>つくったQRの保存先</label><div class="wz-seg">'+[["ls","この端末に溜める"],["mem","溜めない(画面を閉じると消える)"]].map(function(o){ return '<button type="button" class="'+(S.store===o[0]?"on":"")+'" data-a="adv" data-k="store" data-v="'+o[0]+'">'+o[1]+'</button>'; }).join("")+'</div>';
+  h+='</details>';
+  return {h:h,nav:'<button type="button" class="wz-next" data-a="build" id="zbuild">QRをつくる ✨</button>',after:fillConfirm};
+}
+async function fillConfirm(){
+  var gs=selectedGroups(), o=opts(), maxB=Math.max(120,o.size-HDR_LEN), h="", total=0;
+  for(var i=0;i<gs.length;i++){
+    var g=gs[i], de=(o.encScope==="all"||(o.encScope==="imp"&&g.imp))&&encPossible(), hf=(o.halfScope==="all"||(o.halfScope==="imp"&&g.imp));
+    var s=await encodeSet(g.text,o,de,false); if(S.step!=="confirm") return;
+    var np=countParts(s,maxB); total+=np;
+    h+='<div class="wz-li"><span class="wz-ico">'+catOf(g.id).ico+'</span><span class="wz-tx"><b>'+esc(g.name)+'</b><span class="s">'+g.n+'件 → QR '+np+'枚</span></span><span class="wz-tags">'+(de?'<i>🔒暗号化</i>':'<i class="w">暗号化なし</i>')+(hf?'<i>✂半分に切る</i>':"")+'</span></div>';
+  }
+  var el=$("cfList"); if(!el) return;
+  el.innerHTML=h+'<p class="wz-p" style="text-align:center">合計 <b>約 '+total+' 枚</b></p>'+(O_ENC_WARN(o,gs));
+}
+function O_ENC_WARN(o,gs){
+  if(o.encScope!=="none"&&!HAS_SUBTLE) return '<div class="wz-warn">⚠ このブラウザでは、暗号化が使えません。「かんたん」にするか、別のブラウザ(Chrome・Safari)で開いてください。</div>';
+  return "";
+}
+function stepDone(){
+  var b=S.lastBuilt||{sets:0,n:0};
+  var h='<div class="wz-big">✅</div><h1 class="wz-h">QRができました</h1><p class="wz-p">'+b.sets+' セット・'+b.n+' 枚を、トレイに入れました。次は、どうしますか？</p><div class="wz-choices">';
+  h+=card("toprint","🖨","印刷する","トレイのQRを、まとめて印刷します");
+  h+=card("create","➕","ほかのデータも、つくる","");
+  h+=card("test","🧪","試しに読み取って確認する","印刷の前に、元に戻せるか確かめます");
+  h+='</div>';
+  return {h:h,nav:""};
+}
+function stepPrint(){
+  var h='<h1 class="wz-h">印刷します</h1>';
+  if(!tray.length) return {h:h+'<p class="wz-p">トレイは、空です。先にQRをつくってください。</p><div class="wz-choices">'+card("create","🗄","QRをつくる","")+'</div>',nav:""};
+  h+='<div class="wz-list">';
+  tray.forEach(function(it,i){ h+='<div class="wz-li"><span class="wz-ico">'+(catOf(it.cat)?catOf(it.cat).ico:"🗄")+'</span><span class="wz-tx"><b>'+esc(it.name)+'</b><span class="s">QR '+it.N+'枚'+(it.enc?' ・🔒暗号化':'')+(it.half?' ・✂半分':'')+'</span></span><button type="button" class="wz-link" data-a="rm" data-i="'+i+'">消す</button></div>'; });
+  h+='</div><p class="wz-p" style="text-align:center">合計 '+trayCount()+' 枚</p>';
+  h+='<label class="wz-lbl">QRの大きさ</label><div class="wz-seg">'+[[40,"小 4cm"],[50,"ふつう 5cm"],[60,"大 6cm"]].map(function(o){ return '<button type="button" class="'+(S.psize===o[0]?"on":"")+'" data-a="psize" data-v="'+o[0]+'">'+o[1]+'</button>'; }).join("")+'</div>';
+  h+='<div class="wz-warn" id="pwarn"></div>';
+  h+='<div class="wz-note">✔ 印刷の前に、スマホのカメラで、画面のQRを1枚読んで確認すると安心です。</div>';
+  return {h:h,nav:'<button type="button" class="wz-next" data-a="doPrint">🖨 印刷する</button>',after:printWarn};
+}
+function printWarn(){
+  var mm=S.psize, worst=0, wv=0;
+  tray.forEach(function(it){ it.parts.forEach(function(p){ try{ var r=qrSvg(p,it.level); var per=mm/r.total; if(!worst||per<worst){ worst=per; wv=r.ver; } }catch(e){} }); });
+  var el=$("pwarn"); if(!el) return;
+  if(worst&&worst<0.33){ el.textContent="⚠ 細かすぎて、読み取りにくい可能性があります。大きさを「大」にするか、「くわしい設定」で1枚の量を小さくして、作り直してください。"; el.style.display=""; }
+  else if(worst&&worst<0.42){ el.textContent="やや細かいQRがあります。高解像度で印刷し、試し読みしてください。"; el.style.display=""; }
+  else el.style.display="none";
+}
+function stepWipe(){
+  var h='<div class="wz-big">🖨</div><h1 class="wz-h">印刷は、終わりましたか？</h1><p class="wz-p">印刷できたら、<b>この端末のデータを、すべて削除</b>します。先に、紙のQRをスマホで1枚読み取って、確認してください。</p><div class="wz-choices">';
+  h+=card("wipeYes","🧹","はい、すべて削除する","入力・QR・保存データを消します");
+  h+=card("doPrint","🔁","もう一度、印刷する","");
+  h+=card("home","⏳","あとで(残しておく)","");
+  h+='</div>';
+  return {h:h,nav:""};
+}
+function stepWiped(){
+  var h='<div class="wz-big">✅</div><h1 class="wz-h">削除しました</h1><p class="wz-p">入力データ・QRトレイ・保存データを、すべて消しました。</p><div class="wz-box"><b>あと、手で消すもの</b><ul><li>書き出したCSV・vCardファイル(ゴミ箱も空に)</li><li>ブラウザの履歴・ダウンロード履歴</li><li>プリンターの印刷履歴・PDFで保存したファイル</li></ul></div><p class="wz-p">紙のQRは、安全な場所に、保管してください。重要なものは、半分ずつ別の場所に。</p>';
+  return {h:h,nav:'<button type="button" class="wz-next" data-a="home">トップへ</button>'};
+}
+function stepRestore(){
+  var ids=Object.keys(restoreSets), h='<h1 class="wz-h">QRから、元に戻します</h1><p class="wz-p">スマホのカメラで、QRを読み取ります。出てきた文字を、コピーして、ここに貼り付けてください。<b>1枚ずつ</b>追加します。</p>';
+  h+='<div class="wz-box"><textarea id="zRin" rows="4" placeholder="QV1. で始まる文字を貼り付け">'+esc(S.rtext)+'</textarea><button type="button" class="wz-sub" data-a="partAdd">この1枚を追加</button></div>';
+  var enc=false;
+  if(ids.length){ h+='<div class="wz-list">'; ids.forEach(function(id){ var s=restoreSets[id], miss=[]; for(var i=1;i<=s.n;i++) if(!s.parts[i]) miss.push(i); if(s.mode==="e"||s.mode==="x") enc=true;
+    h+='<div class="wz-li"><span class="wz-ico">'+(miss.length?"⏳":"✅")+'</span><span class="wz-tx"><b>セット '+id+'</b><span class="s">'+(s.n-miss.length)+' / '+s.n+' 枚'+(miss.length?'(不足:'+miss.join("、")+'枚目)':'(そろいました)')+'</span></span></div>'; });
+    h+='</div><button type="button" class="wz-link" data-a="partClear">追加した分を、クリア</button>'; }
+  if(enc) h+='<div class="wz-box wz-form"><label>パスフレーズ(暗号化されています)</label><input type="password" id="zRpass" autocomplete="off" value="'+esc(S.rpass)+'"></div>';
+  return {h:h,nav:'<button type="button" class="wz-next" data-a="restoreGo"'+(ids.length?"":" disabled")+'>元に戻す</button>'};
+}
+function stepRResult(){
+  var h='<h1 class="wz-h">元に戻しました</h1><pre class="wz-out" id="zOut"></pre><div class="wz-choices sm">'+card("rcopy","📋","コピーする","")+card("rsave","💾","テキストで保存する","")+card("rclear","🧽","画面から消して、戻る","")+'</div>';
+  return {h:h,nav:"",after:function(){ var o=$("zOut"); if(o) o.textContent=S.rout; }};
+}
+var STEPS={start:stepStart,pick:stepPick,input:stepInput,safety:stepSafety,pass:stepPass,confirm:stepConfirm,done:stepDone,print:stepPrint,wipe:stepWipe,wiped:stepWiped,restore:stepRestore,rresult:stepRResult};
+
+/* ---------- 描画 ---------- */
+function render(){
+  var st=STEPS[S.step]||stepStart, r=st();
+  var steps=flowSteps(), idx=steps.indexOf(S.step), dots="";
+  if(idx>=0){ dots='<div class="wz-dots">'+steps.map(function(s,i){ return '<i class="'+(i<=idx?"on":"")+'"></i>'; }).join("")+'</div>'; }
+  var top='<div class="wz-top"><button type="button" class="wz-ico-btn" data-a="'+(S.step==="start"?"toTop":"back")+'" aria-label="戻る">'+(S.step==="start"?"← トップ":"← 戻る")+'</button>'+dots+'<button type="button" class="wz-ico-btn" data-a="help" aria-label="くわしい説明">？ 説明</button></div>';
+  var nav='<div class="wz-nav">'+(r.skip?r.skip:"")+(r.nav||"")+'</div>';
+  if(!r.nav&&!r.skip) nav="";
+  $("vStage").innerHTML=top+'<div class="wz-stage" id="wzSlide">'+r.h+'</div>'+nav;
+  if(r.after) r.after();
+}
+
+/* ---------- 操作 ---------- */
+function readInputs(){
+  var a=$("zp1"); if(a) S.pass=a.value; a=$("zp2"); if(a) S.pass2=a.value;
+  a=$("zPaste"); if(a) S.pasteText=a.value; a=$("zRin"); if(a) S.rtext=a.value; a=$("zRpass"); if(a) S.rpass=a.value;
+}
+function startCreate(){ S.cats={}; S.queue=[]; S.qi=0; S.mode={}; S.pasteText=""; go("pick"); }
+function afterBuild(){ go("done"); }
+document.addEventListener("click",function(e){
+  var el=e.target.closest&&e.target.closest("#vStage [data-a]"); if(!el) return;
+  readInputs();
+  var a=el.getAttribute("data-a"), v=el.getAttribute("data-v"), id=S.queue[S.qi];
+  switch(a){
+    case "back": back(); break;
+    case "help": $("vHelp").classList.add("open"); break;
+    case "toTop": show("hero"); break;
+    case "home": S.hist=[]; S.step="start"; render(); window.scrollTo(0,0); break;
+    case "create": startCreate(); break;
+    case "restore": go("restore"); break;
+    case "toprint": go("print"); break;
+    case "tog": var c=el.getAttribute("data-c"); S.cats[c]=!S.cats[c]; render(); break;
+    case "pickNext": S.queue=CATS.filter(function(c){ return S.cats[c.id]; }).map(function(c){ return c.id; }); S.qi=0; go("input"); break;
+    case "file": $("vFile").click(); break;
+    case "paste": S.mode[id]=S.mode[id]==="paste"?"":"paste"; render(); break;
+    case "manual": S.mode[id]=S.mode[id]==="manual"?"":"manual"; render(); break;
+    case "pasteGo": importText(id,S.pasteText,"貼り付けメモ"); S.pasteText=""; render(); break;
+    case "rowAdd": var cc=catOf(id), row=cc.fields.map(function(f,k){ var i=$("zf"+k); return i?i.value:""; });
+      if(!row.some(function(x){ return String(x).trim(); })){ toast("入力してください"); break; }
+      data[id].push(row); toast("追加しました"); render(); setTimeout(function(){ var f0=$("zf0"); if(f0) f0.focus(); },30); break;
+    case "undo": var rows=data[id]; for(var i=rows.length-1;i>=0;i--){ if(rows[i].some(function(x){ return String(x||"").trim(); })){ rows.splice(i,1); break; } } render(); break;
+    case "inSkip": data[id]=[]; S.queue.splice(S.qi,1); if(!S.queue.length){ S.hist=[]; S.step="pick"; render(); } else if(S.qi>=S.queue.length){ go("safety"); } else render(); break;
+    case "inNext": if(S.qi<S.queue.length-1){ S.qi++; render(); window.scrollTo(0,0); } else go("safety"); break;
+    case "lvl": S.level=v; render(); break;
+    case "safetyNext": go(needEnc()?"pass":"confirm"); break;
+    case "passNext":
+      var err=$("zperr");
+      if(S.pass.length<8){ err.textContent="8文字以上にしてください。"; break; }
+      if(S.pass!==S.pass2){ err.textContent="2つの入力が、一致しません。"; break; }
+      go("confirm"); break;
+    case "adv": var k=el.getAttribute("data-k"); if(k==="size") S.size=+v; else if(k==="ecc") S.ecc=v; else if(k==="comp") S.comp=(v==="1"); else if(k==="store") S.store=v;
+      var det=document.querySelector(".wz-adv"); var was=det&&det.open; render(); if(was){ var d2=document.querySelector(".wz-adv"); if(d2) d2.open=true; } break;
+    case "build": buildNow(el); break;
+    case "test": go("restore"); break;
+    case "rm": tray.splice(+el.getAttribute("data-i"),1); saveTray(); render(); break;
+    case "psize": S.psize=+v; render(); break;
+    case "doPrint": doPrint(); break;
+    case "wipeYes": wipeAll(); S.hist=[]; S.step="wiped"; render(); window.scrollTo(0,0); break;
+    case "partAdd": addParts(S.rtext); S.rtext=""; render(); break;
+    case "partClear": restoreSets={}; render(); break;
+    case "restoreGo": restore(); break;
+    case "rcopy": if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(S.rout).then(function(){ toast("コピーしました"); },function(){ toast("コピーできませんでした"); }); break;
+    case "rsave": var an=document.createElement("a"); an.href=URL.createObjectURL(new Blob([S.rout],{type:"text/plain;charset=utf-8"})); an.download="restore.txt"; document.body.appendChild(an); an.click(); setTimeout(function(){ URL.revokeObjectURL(an.href); an.remove(); },500); break;
+    case "rclear": S.rout=""; restoreSets={}; S.hist=[]; S.step="start"; render(); break;
+  }
+});
+document.addEventListener("change",function(e){ if(e.target&&e.target.id==="zshow"){ readInputs(); S.showPass=e.target.checked; render(); } });
+$("vFile").addEventListener("change",function(e){
+  var id=S.queue[S.qi]; var files=Array.prototype.slice.call(e.target.files||[]); if(!files.length||!id) return;
+  var left=files.length;
+  files.forEach(function(f){ var r=new FileReader(); r.onload=function(){ importText(id,String(r.result||""),f.name.replace(/\.[^.]+$/,"")); }; r.readAsText(f,"utf-8"); });
+  e.target.value="";
+});
+async function buildNow(btn){
+  var old=btn.textContent; btn.disabled=true; btn.textContent="作成中…";
   try{
     var items=await buildItems();
-    if(items&&items.length){ items.forEach(function(it){ tray.push(it); }); saveTray(); renderTray(); toast(items.length+"セット("+items.reduce(function(a,t){ return a+t.N; },0)+"枚)をトレイに追加しました"); $("vTray").scrollIntoView({behavior:"smooth",block:"center"}); }
-    else if(items&&!items.length) toast("QRにする項目がありません。データを入力・選択してください");
-  } finally { b.disabled=false; b.textContent=o; }
-};
-$("btnPrintV").onclick=doPrint;
-$("btnWipeV").onclick=function(){ WIPE_Q=$("wipeBody").getAttribute("data-q")||$("wipeBody").innerHTML; openWipe(); };
-$("btnPartAdd").onclick=function(){ addParts($("vrIn").value); $("vrIn").value=""; };
-$("btnPartClear").onclick=function(){ restoreSets={}; renderRestore(); };
-$("btnRestore").onclick=restore;
-$("btnRCopy").onclick=function(){ var t=$("vrOut").textContent; if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(function(){ toast("コピーしました"); },function(){ toast("コピーできませんでした"); }); };
-$("btnRSave").onclick=function(){ var a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([$("vrOut").textContent],{type:"text/plain;charset=utf-8"})); a.download="restore.txt"; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },500); };
-$("btnRClear").onclick=function(){ $("vrOut").textContent=""; $("vrOutWrap").hidden=true; };
+    if(items&&items.length){
+      items.forEach(function(it){ tray.push(it); }); saveTray();
+      S.queue.forEach(function(id){ data[id]=[]; });
+      S.lastBuilt={sets:items.length,n:items.reduce(function(a,t){ return a+t.N; },0)};
+      S.cats={}; S.queue=[]; S.qi=0; S.pass=""; S.pass2="";
+      S.hist=[]; S.step="done"; render(); window.scrollTo(0,0);
+    } else if(items&&!items.length){ toast("QRにするデータがありません"); btn.disabled=false; btn.textContent=old; }
+    else { btn.disabled=false; btn.textContent=old; }
+  }catch(e){ btn.disabled=false; btn.textContent=old; toast("作成できませんでした"); }
+}
+async function buildItems(){
+  var o=opts(), gs=selectedGroups(), items=[], maxB=Math.max(120,o.size-HDR_LEN);
+  var needE=gs.some(function(g){ return wantEnc(g.imp,o); });
+  if(needE){
+    if(!HAS_SUBTLE){ toast("このブラウザでは暗号化できません。「かんたん」にするか、別のブラウザで開いてください"); return null; }
+    if(o.pass.length<8){ toast("パスフレーズが未入力です"); return null; }
+  }
+  for(var i=0;i<gs.length;i++){
+    var g=gs[i], de=wantEnc(g.imp,o), hf=wantHalf(g.imp,o);
+    var s=await encodeSet(g.text,o,de,true), crc=crc32(utf8(s.payload)), id=rid();
+    var ch=chunkPayload(s.mode,s.payload,maxB), N=ch.length;
+    var parts=ch.map(function(p,k){ return header(id,k+1,N,s.mode,crc)+p; });
+    for(var k=0;k<parts.length;k++){ try{ qrSvg(parts[k],o.level); }catch(e){ toast("量が大きすぎてQRにできません。「くわしい設定」で、1枚の量を小さくしてください"); return null; } }
+    items.push({id:id,cat:g.id,name:g.short,imp:g.imp,mode:s.mode,enc:(s.mode==="e"||s.mode==="x"),half:hf,level:o.level,n:g.n,N:N,t:Date.now(),parts:parts});
+  }
+  return items;
+}
+$("helpClose").onclick=function(){ $("vHelp").classList.remove("open"); };
+$("vHelp").addEventListener("click",function(e){ if(e.target===this) this.classList.remove("open"); });
 $("wipeNo").onclick=function(){ $("wipeDlg").classList.remove("open"); };
 $("wipeYes").onclick=function(){ wipeAll(); wipeDone(); };
 $("wipeBody").setAttribute("data-q",$("wipeBody").innerHTML);
 window.addEventListener("afterprint",function(){
   document.body.classList.remove("printing-vault");
-  if(curView==="vault"||curView==="mimamori"){ WIPE_Q=$("wipeBody").getAttribute("data-q"); openWipe(); }
+  if(curView==="vault"&&S.step==="print"){ go("wipe"); }
+  else if(curView==="mimamori"){ WIPE_Q=$("wipeBody").getAttribute("data-q"); openWipe(); }
 });
 window.__qrvaultOpenWipe=function(){ WIPE_Q=$("wipeBody").getAttribute("data-q"); openWipe(); };
-window.addEventListener("beforeunload",function(){ try{ if($("oStore").value==="mem") localStorage.removeItem(KEY_TRAY); }catch(e){} });
-loadTray(); renderAll();
-window.__qv={data:data,tray:function(){ return tray; },encodeSet:encodeSet,chunkPayload:chunkPayload,qrSvg:qrSvg,renderAll:renderAll};
+window.addEventListener("beforeunload",function(){ try{ if(S.store==="mem") localStorage.removeItem(KEY_TRAY); }catch(e){} });
+loadTray(); render();
+window.__qv={data:data,S:S,tray:function(){ return tray; },encodeSet:encodeSet,chunkPayload:chunkPayload,qrSvg:qrSvg,render:render,go:go};
 })();
 
 </script>
