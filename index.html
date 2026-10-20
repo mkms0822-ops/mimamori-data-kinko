@@ -1,0 +1,4214 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>紙のQR金庫 ― データ物理保存QRメーカー</title>
+<style>
+  :root{
+    --ink:#1f2a33; --ink-soft:#5a6b78; --line:#dbe3e7; --muted:#8795a0;
+    --paper:#ffffff; --bg:#eef2f4; --panel:#ffffff; --field:#ffffff;
+    /* theme (overridden by [data-theme]) */
+    --brand:#0e7c86; --brand-deep:#0a5b63; --brand-soft:#e3f0f1;
+    --accent:#e2614a; --accent-soft:#fbe9e4;
+  }
+  [data-theme="navy"]  { --brand:#26476e; --brand-deep:#1a3355; --brand-soft:#e5ecf5; --accent:#d98324; --accent-soft:#faeede; }
+  [data-theme="coral"] { --brand:#c9463c; --brand-deep:#9e332b; --brand-soft:#fbe6e3; --accent:#2f7d7a; --accent-soft:#e2f1f0; }
+  [data-theme="green"] { --brand:#2f7d4f; --brand-deep:#215c3a; --brand-soft:#e3f1e8; --accent:#c98a23; --accent-soft:#f7eed9; }
+  [data-theme="purple"]{ --brand:#6a4a8f; --brand-deep:#4f3670; --brand-soft:#efe9f5; --accent:#c9463c; --accent-soft:#fbe6e3; }
+  [data-theme="rose"]  { --brand:#b0446a; --brand-deep:#8a3352; --brand-soft:#f8e6ec; --accent:#0e7c86; --accent-soft:#e3f0f1; }
+
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo",system-ui,sans-serif;
+    line-height:1.6; padding:22px 16px 72px;}
+
+  .masthead{max-width:1180px; margin:0 auto 20px;}
+  .masthead h1{font-size:24px; margin:0; font-weight:800; color:var(--brand-deep); letter-spacing:.01em;}
+  .masthead .lede{font-size:13px; color:var(--ink-soft); margin:4px 0 0;}
+
+  .wrap{max-width:1180px; margin:0 auto; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:24px; align-items:start;}
+  @media (max-width:900px){ .wrap{grid-template-columns:1fr; gap:18px;} }
+
+  /* ---------- form ---------- */
+  .form{background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:18px 18px 22px;}
+  .fs{border:none; padding:0; margin:0 0 20px;}
+  .fs:last-child{margin-bottom:0;}
+  .fs > legend{font-size:14px; font-weight:800; color:var(--ink); margin:0 0 10px; padding:0;
+    display:flex; align-items:center; gap:8px; width:100%;}
+  .tag{font-size:11px; font-weight:700; color:var(--brand); background:var(--brand-soft); border-radius:6px; padding:2px 8px;}
+  label{display:block; font-size:12px; color:var(--ink-soft); margin:0 0 4px; font-weight:600;}
+  input[type=text], input[type=tel], input[type=date], textarea, select{
+    width:100%; font:inherit; font-size:15px; color:var(--ink); background:var(--field);
+    border:1.5px solid var(--line); border-radius:9px; padding:9px 11px; transition:border-color .15s, box-shadow .15s;}
+  input::placeholder, textarea::placeholder{color:#b0bac1;}
+  input:focus, textarea:focus, select:focus{outline:none; border-color:var(--brand); box-shadow:0 0 0 3px color-mix(in srgb, var(--brand) 18%, transparent);}
+  textarea{resize:vertical; min-height:52px; line-height:1.5;}
+  .row{display:grid; grid-template-columns:1fr; gap:12px; margin-bottom:12px;}
+  .row.two{grid-template-columns:1fr 1fr;}
+  .row.three{grid-template-columns:1fr 1fr 1fr;}
+  @media (max-width:560px){ .row.two,.row.three{grid-template-columns:1fr;} }
+  .hint{font-size:11.5px; color:var(--muted); margin:6px 0 0;}
+
+  /* theme swatches */
+  .swatches{display:flex; gap:8px; flex-wrap:wrap;}
+  .sw{width:34px; height:34px; border-radius:9px; border:2px solid #fff; box-shadow:0 0 0 1.5px var(--line); cursor:pointer;}
+  .sw.active{box-shadow:0 0 0 2px var(--ink);}
+
+  /* photo */
+  .photo-row{display:flex; gap:14px; align-items:center;}
+  .photo-prev{width:74px; height:74px; border-radius:12px; border:1.5px dashed var(--line); background:#f4f7f8;
+    display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0; color:#b0bac1; font-size:11px; text-align:center;}
+  .photo-prev img{width:100%; height:100%; object-fit:cover;}
+  .btn-mini{border:1.5px solid var(--line); background:#fff; color:var(--brand-deep); border-radius:9px;
+    padding:8px 12px; font:inherit; font-size:13px; font-weight:700; cursor:pointer;}
+  .btn-mini:hover{background:var(--brand-soft);}
+
+  /* contact rows */
+  .crow{display:grid; grid-template-columns:.95fr 1fr 1.25fr auto; gap:8px; align-items:end; margin-bottom:10px;}
+  .crow .del{border:1.5px solid var(--line); background:#fff; color:var(--ink-soft); border-radius:9px;
+    width:38px; height:40px; font-size:18px; cursor:pointer; line-height:1;}
+  .crow .del:hover{border-color:var(--accent); color:var(--accent); background:var(--accent-soft);}
+  @media (max-width:560px){ .crow{grid-template-columns:1fr 1fr;} .crow .c-tel,.crow .del{grid-column:1 / span 2;} .crow .del{width:100%;} }
+  .add-btn{width:100%; border:1.5px dashed var(--brand); background:var(--brand-soft); color:var(--brand-deep);
+    border-radius:10px; padding:10px; font:inherit; font-weight:700; font-size:13.5px; cursor:pointer;}
+  .add-btn:hover{filter:brightness(.97);}
+
+  /* checkbox grid */
+  .checks{display:grid; grid-template-columns:1fr 1fr; gap:6px 14px;}
+  @media (max-width:560px){ .checks{grid-template-columns:1fr;} }
+  .chk{display:flex; align-items:center; gap:8px; font-size:13.5px; color:var(--ink); cursor:pointer;}
+  .chk input{width:16px; height:16px; accent-color:var(--brand);}
+
+  /* ---------- actions ---------- */
+  .actions{max-width:1180px; margin:20px auto 0; display:flex; gap:10px; flex-wrap:wrap;}
+  .btn{flex:1 1 auto; min-width:150px; border:none; border-radius:11px; padding:13px 16px; font:inherit;
+    font-size:14.5px; font-weight:800; cursor:pointer; transition:.15s; display:inline-flex; align-items:center; justify-content:center; gap:8px;}
+  .btn svg{width:18px; height:18px;}
+  .btn-print{background:var(--brand); color:#fff;} .btn-print:hover{background:var(--brand-deep);}
+  .btn-img{background:#fff; color:var(--brand-deep); border:1.5px solid var(--brand);} .btn-img:hover{background:var(--brand-soft);}
+  .btn-qr{background:#fff; color:var(--ink); border:1.5px solid var(--line);} .btn-qr:hover{background:#f3f6f7;}
+  .btn-copy{background:#fff; color:var(--ink); border:1.5px solid var(--line);} .btn-copy:hover{background:#f3f6f7;}
+  .btn-share{background:var(--accent); color:#fff;} .btn-share:hover{filter:brightness(.94);}
+  .btn-reset{background:#fff; color:var(--accent); border:1.5px solid var(--accent-soft);} .btn-reset:hover{background:var(--accent-soft);}
+  .btn.copied{background:#1e9e6a !important; color:#fff !important; border-color:#1e9e6a !important;}
+  .actions-note{max-width:1180px; margin:10px auto 0; font-size:12px; color:var(--ink-soft);}
+
+  /* ---------- preview / card ---------- */
+  .prev-col{position:sticky; top:20px;}
+  @media (max-width:900px){ .prev-col{position:static;} }
+  .prev-label{font-size:12px; color:var(--ink-soft); margin:0 0 8px; letter-spacing:.04em;}
+
+  /* A4 sheet with two cut-out cards */
+  .sheet{width:794px; max-width:100%; margin:0 auto; background:#fff; border:1px solid var(--line);
+    box-shadow:0 10px 30px rgba(31,42,51,.10); border-radius:6px; padding:22px; display:flex; gap:20px; align-items:flex-start;}
+  @media (max-width:520px){ .sheet{flex-direction:column; padding:14px; gap:14px;} }
+  .pcard{flex:1 1 0; min-width:0; background:var(--paper); border:1.5px dashed #9aa4ac; border-radius:12px; overflow:hidden; align-self:stretch;}
+  .card-hd{background:var(--brand); color:#fff; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .card-hd.alt{background:var(--accent);}
+  .card-hd h2{margin:0; font-size:17px; font-weight:800; letter-spacing:.02em;}
+  .card-hd .hd-sub{font-size:10px; opacity:.92; text-align:right; flex-shrink:0;}
+  .card-body{padding:14px 15px 16px;}
+  .idrow.slim{align-items:center;}
+
+  .idrow{display:flex; gap:14px; align-items:flex-start;}
+  .idphoto{width:92px; height:92px; border-radius:12px; overflow:hidden; flex-shrink:0; background:var(--brand-soft);
+    display:flex; align-items:center; justify-content:center; color:var(--brand); font-size:11px;}
+  .idphoto img{width:100%; height:100%; object-fit:cover;}
+  .idmain{flex:1; min-width:0;}
+  .idname{font-size:22px; font-weight:800; color:var(--ink); line-height:1.15; word-break:break-word;}
+  .idfuri{font-size:12px; color:var(--ink-soft); margin-top:1px;}
+  .idmeta{margin-top:7px; font-size:12.5px; color:var(--ink); display:flex; flex-wrap:wrap; gap:4px 14px;}
+  .idmeta b{color:var(--ink-soft); font-weight:700; margin-right:4px;}
+
+  .msg{margin-top:12px; background:var(--accent-soft); color:var(--brand-deep); border-radius:10px;
+    padding:9px 12px; font-size:13.5px; font-weight:700; text-align:center;}
+
+  .sec{margin-top:14px;}
+  .sec-t{font-size:11.5px; font-weight:800; letter-spacing:.06em; color:var(--brand);
+    border-bottom:2px solid var(--line); padding-bottom:5px; margin-bottom:8px; display:flex; align-items:center; gap:6px;}
+  .sec-t.warn{color:var(--accent);}
+
+  .med{display:grid; grid-template-columns:1fr; gap:5px;}
+  .med .mrow{display:flex; gap:8px; font-size:13px;}
+  .med .mk{color:var(--ink-soft); min-width:76px; font-weight:700; flex-shrink:0;}
+  .med .mv{color:var(--ink); flex:1; word-break:break-word;}
+
+  .clist{margin:0; padding:0; list-style:none;}
+  .clist li{display:flex; align-items:baseline; gap:8px; padding:6px 0; border-bottom:1px dotted var(--line);}
+  .clist li:last-child{border-bottom:none;}
+  .cl-rel{font-size:12px; color:var(--ink-soft); min-width:64px; flex-shrink:0;}
+  .cl-name{font-size:14px; font-weight:700; color:var(--ink); flex:1; min-width:0; word-break:break-word;}
+  .cl-tel{font-size:14.5px; font-weight:800; color:var(--brand-deep); white-space:nowrap; font-variant-numeric:tabular-nums;}
+  .empty{color:#b7bcb6; font-size:12.5px; text-align:center; padding:6px 0;}
+
+  .qr-group{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .qg{text-align:center; background:#f7f9fa; border-radius:10px; padding:8px 6px;}
+  .qbox{width:100%; aspect-ratio:1/1; background:#fff; border-radius:6px; padding:5px; border:1px solid var(--line);}
+  .qbox svg, .qbox img{width:100%; height:100%; display:block; object-fit:contain;}
+  .qg-l{font-size:10px; font-weight:700; color:var(--ink); margin-top:5px; line-height:1.2;}
+  .qg-s{font-size:8.5px; color:var(--ink-soft); line-height:1.15;}
+
+  .hot{margin-top:14px; display:grid; grid-template-columns:1fr 1fr; gap:4px 14px;}
+  @media (max-width:420px){ .hot{grid-template-columns:1fr;} }
+  .hot .h{display:flex; align-items:baseline; gap:8px; padding:4px 0; border-bottom:1px dotted var(--line); font-size:11.5px;}
+  .hot .hn{font-weight:800; color:var(--accent); min-width:44px; font-variant-numeric:tabular-nums;}
+
+  .card-foot{margin-top:12px; font-size:10px; color:var(--muted); text-align:right;}
+
+  /* sensitive info */
+  .tag.warn{color:var(--accent); background:var(--accent-soft);}
+  .private-fs{border:1.5px solid var(--accent-soft); border-radius:14px; padding:14px; background:color-mix(in srgb, var(--accent-soft) 30%, #fff);}
+  .warnbox{background:var(--accent-soft); color:var(--brand-deep); border-radius:10px; padding:10px 12px; font-size:12.5px; line-height:1.5; margin-bottom:14px;}
+  .warnbox b{color:var(--accent);}
+  .subsec{margin-bottom:16px;}
+  .subsec:last-child{margin-bottom:0;}
+  .subsec-t{font-size:13px; font-weight:800; color:var(--ink); margin:0 0 8px; padding-bottom:5px; border-bottom:1px solid var(--line);}
+  .gcard{border:1px solid var(--line); border-radius:10px; padding:10px; margin-bottom:8px; position:relative; background:#fff;}
+  .gcard .del{position:absolute; top:8px; right:8px; border:1.5px solid var(--line); background:#fff; color:var(--ink-soft);
+    border-radius:8px; width:30px; height:30px; font-size:16px; cursor:pointer; line-height:1;}
+  .gcard .del:hover{border-color:var(--accent); color:var(--accent); background:var(--accent-soft);}
+
+  /* private block on card */
+  .private-block{margin-top:16px; border:2px dashed var(--accent); border-radius:12px; padding:12px 14px; background:var(--accent-soft);}
+  .private-hd{font-size:12.5px; font-weight:800; color:var(--accent); margin-bottom:8px; letter-spacing:.02em;}
+  .private-block .sec-t{color:var(--brand-deep); border-bottom-color:color-mix(in srgb, var(--accent) 30%, #fff);}
+  .kv{font-size:12.5px; color:var(--ink); padding:3px 0; border-bottom:1px dotted color-mix(in srgb, var(--accent) 25%, #fff);}
+  .kv:last-child{border-bottom:none;}
+  .kv b{color:var(--ink-soft); font-weight:700; margin-right:6px;}
+  .private-note{margin-top:10px; font-size:11px; color:var(--accent); font-weight:700; text-align:center;}
+
+  /* utility QRs */
+  .util-qrs{display:flex; gap:10px; flex-wrap:wrap; justify-content:space-around;}
+  .uq{flex:1 1 90px; max-width:120px; text-align:center;}
+  .uq img{width:100%; height:auto; display:block; border:1px solid var(--line); border-radius:6px; background:#fff;}
+  .uq .uq-l{font-size:10.5px; font-weight:700; color:var(--ink); margin-top:4px; line-height:1.25;}
+  .uq .uq-s{font-size:9px; color:var(--ink-soft); line-height:1.2;}
+  /* utility QR chooser (form) */
+  .uqrow{display:flex; align-items:center; gap:12px; padding:8px; border:1px solid var(--line); border-radius:10px; margin-bottom:8px;}
+  .uqrow img{width:52px; height:52px; border-radius:6px; border:1px solid var(--line); flex-shrink:0;}
+  .uqrow .uqt{flex:1; min-width:0;}
+  .uqrow .uqt b{font-size:13.5px; color:var(--ink);}
+  .uqrow .uqt span{display:block; font-size:11.5px; color:var(--ink-soft);}
+  .uqrow input{width:18px; height:18px; accent-color:var(--brand); flex-shrink:0;}
+
+  /* toast */
+  #toast{position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(20px);
+    background:var(--ink); color:#fff; padding:11px 18px; border-radius:10px; font-size:13.5px; opacity:0;
+    pointer-events:none; transition:.25s; z-index:50; max-width:90vw; text-align:center;}
+  #toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  /* ---------- print: A4, two cards side by side with cut lines ---------- */
+  @media print{
+    @page{ size:A4 portrait; margin:10mm; }
+    body{background:#fff; padding:0; margin:0;}
+    .masthead,.form,.actions,.actions-note,.prev-label,.no-print,#toast{display:none !important;}
+    .wrap{display:block; max-width:none; margin:0; padding:0;}
+    .prev-col{position:static;}
+    .sheet{width:100%; max-width:none; margin:0; padding:0; border:none; box-shadow:none; border-radius:0; gap:6mm; align-items:stretch;}
+    .pcard{border:1px dashed #333; border-radius:8px; page-break-inside:avoid; break-inside:avoid;}
+    .card-hd{-webkit-print-color-adjust:exact; print-color-adjust:exact;}
+    .qg,.msg,.warnbox,.card-hd{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  }
+
+/* ===== 紙のQR金庫: 共通 ===== */
+[hidden]{display:none !important;}
+.view{min-height:100vh;}
+.back-btn{border:1.5px solid var(--line); background:#fff; color:var(--brand-deep); border-radius:999px; padding:6px 14px; font:inherit; font-size:13px; font-weight:700; cursor:pointer; margin-bottom:10px;}
+.back-btn:hover{background:var(--brand-soft);}
+.mm-top{max-width:1180px; margin:0 auto;}
+
+/* ===== ヒーロー ===== */
+body.is-hero{background:#0b1630; padding:0;}
+#hero{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:32px 18px 48px;
+  background:radial-gradient(ellipse at 50% 0%, #1d3a6e 0%, #0b1630 62%, #070d1f 100%); color:#eaf1ff;}
+.hero-in{width:100%; max-width:880px; text-align:center;}
+.hero-mark{width:92px; height:92px; margin:0 auto 10px; display:block;}
+#hero h1{font-size:clamp(30px,6vw,46px); margin:4px 0 2px; letter-spacing:.04em; font-weight:800; color:#fff;}
+#hero .sub{font-size:clamp(14px,2.6vw,18px); color:#8fd0ff; margin:0 0 14px; font-weight:700; letter-spacing:.08em;}
+#hero .lead{font-size:14.5px; line-height:1.9; color:#c9d8f2; max-width:640px; margin:0 auto 26px;}
+.hero-btns{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:0 auto 26px;}
+@media (max-width:640px){ .hero-btns{grid-template-columns:1fr;} }
+.hero-btn{display:flex; flex-direction:column; align-items:center; gap:6px; text-align:center; cursor:pointer; font:inherit;
+  border:1.5px solid rgba(143,208,255,.55); border-radius:16px; padding:20px 16px; color:#fff;
+  background:linear-gradient(160deg, rgba(77,163,255,.28), rgba(77,163,255,.08)); transition:.15s;}
+.hero-btn:hover{background:linear-gradient(160deg, rgba(77,163,255,.45), rgba(77,163,255,.14)); transform:translateY(-2px);}
+.hero-btn .hb-ico{font-size:34px; line-height:1;}
+.hero-btn .hb-t{font-size:18px; font-weight:800; line-height:1.4;}
+.hero-btn .hb-s{font-size:12.5px; color:#c9d8f2; line-height:1.7;}
+.hero-btn.b2{border-color:rgba(255,190,120,.6); background:linear-gradient(160deg, rgba(255,160,70,.26), rgba(255,160,70,.07));}
+.hero-btn.b2:hover{background:linear-gradient(160deg, rgba(255,160,70,.42), rgba(255,160,70,.12));}
+.hero-pts{display:grid; grid-template-columns:repeat(2,1fr); gap:10px; text-align:left; margin:0 auto; padding:0; list-style:none; max-width:760px;}
+@media (max-width:640px){ .hero-pts{grid-template-columns:1fr;} }
+.hero-pts li{background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:10px 14px; font-size:12.5px; line-height:1.7; color:#d7e3fa;}
+.hero-pts b{color:#fff;}
+.hero-foot{margin-top:20px; font-size:11.5px; color:#8ea3c9; line-height:1.8;}
+
+/* ===== データ保管QRメーカー ===== */
+.v-wrap{max-width:1000px; margin:0 auto;}
+.v-head h1{font-size:24px; margin:0; font-weight:800; color:var(--brand-deep);}
+.v-head .lede{font-size:13px; color:var(--ink-soft); margin:4px 0 14px;}
+.flow{display:grid; grid-template-columns:repeat(5,1fr); gap:6px; margin:0 0 14px; padding:0; list-style:none; counter-reset:fl;}
+@media (max-width:700px){ .flow{grid-template-columns:1fr 1fr;} }
+.flow li{counter-increment:fl; background:var(--brand-soft); color:var(--brand-deep); border-radius:10px; padding:8px 10px; font-size:12px; font-weight:700; line-height:1.5;}
+.flow li::before{content:counter(fl) ". "; color:var(--accent);}
+.vcard{background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:16px 16px 18px; margin-bottom:16px;}
+.vcard > h2{font-size:16px; margin:0 0 4px; color:var(--ink); display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+.vcard > .sub{font-size:12.5px; color:var(--ink-soft); margin:0 0 12px;}
+.stepno{display:inline-flex; width:24px; height:24px; border-radius:50%; align-items:center; justify-content:center; background:var(--brand); color:#fff; font-size:13px; font-weight:800;}
+.alert{background:var(--accent-soft); color:var(--brand-deep); border-radius:10px; padding:10px 12px; font-size:12.5px; line-height:1.7; margin:0 0 12px;}
+.alert b{color:var(--accent);}
+.okbox{background:var(--brand-soft); color:var(--brand-deep); border-radius:10px; padding:10px 12px; font-size:12.5px; line-height:1.7; margin:0 0 12px;}
+.tabs{display:flex; flex-wrap:wrap; gap:6px; margin:0 0 12px;}
+.tab{border:1.5px solid var(--line); background:#fff; color:var(--ink); border-radius:999px; padding:6px 12px; font:inherit; font-size:12.5px; font-weight:700; cursor:pointer;}
+.tab.on{background:var(--brand); border-color:var(--brand); color:#fff;}
+.tab .cnt{opacity:.8; font-weight:600; margin-left:4px;}
+.tab .imp{color:var(--accent); font-size:11px; margin-left:3px;}
+.tab.on .imp{color:#ffd9d0;}
+.btnrow{display:flex; flex-wrap:wrap; gap:8px; margin:8px 0;}
+.vb{border:1.5px solid var(--brand); background:#fff; color:var(--brand-deep); border-radius:10px; padding:9px 14px; font:inherit; font-size:13.5px; font-weight:800; cursor:pointer;}
+.vb:hover{background:var(--brand-soft);}
+.vb.pri{background:var(--brand); color:#fff;}
+.vb.pri:hover{background:var(--brand-deep);}
+.vb.dng{border-color:var(--accent); color:var(--accent);}
+.vb.dng:hover{background:var(--accent-soft);}
+.vb:disabled{opacity:.45; cursor:not-allowed;}
+.vrow{border:1px solid var(--line); border-radius:10px; padding:8px; margin-bottom:8px; display:grid; gap:6px; background:#fff; position:relative;}
+.vrow .rn{font-size:11px; color:var(--muted); font-weight:700;}
+.vrow .rf{display:grid; gap:6px;}
+.vrow .rdel{position:absolute; top:6px; right:6px; border:1.5px solid var(--line); background:#fff; color:var(--ink-soft); border-radius:8px; width:28px; height:28px; cursor:pointer;}
+.vrow .rdel:hover{border-color:var(--accent); color:var(--accent);}
+.vrow label{margin:0 0 2px; font-size:11px;}
+.vrow input, .vrow textarea{font-size:14px; padding:7px 9px;}
+.pager{display:flex; align-items:center; gap:10px; margin:6px 0; font-size:12.5px; color:var(--ink-soft);}
+.opts{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+@media (max-width:640px){ .opts{grid-template-columns:1fr;} }
+.opts .full{grid-column:1 / -1;}
+table.plan{width:100%; border-collapse:collapse; font-size:12.5px; margin:8px 0;}
+table.plan th, table.plan td{border-bottom:1px solid var(--line); padding:6px 6px; text-align:left; vertical-align:top;}
+table.plan th{color:var(--ink-soft); font-size:11.5px; white-space:nowrap;}
+.plan-wrap{overflow-x:auto;}
+.flag{display:inline-block; font-size:11px; font-weight:800; border-radius:6px; padding:1px 7px; margin-right:4px; background:var(--brand-soft); color:var(--brand-deep);}
+.flag.w{background:var(--accent-soft); color:var(--accent);}
+.tray-item{display:grid; grid-template-columns:92px 1fr auto; gap:12px; align-items:center; border:1px solid var(--line); border-radius:12px; padding:10px; margin-bottom:8px; background:#fff;}
+@media (max-width:560px){ .tray-item{grid-template-columns:72px 1fr;} .tray-item .ti-act{grid-column:1 / -1;} }
+.tray-item .ti-qr{width:92px; height:92px; border:1px solid var(--line); border-radius:6px; background:#fff; overflow:hidden;}
+@media (max-width:560px){ .tray-item .ti-qr{width:72px; height:72px;} }
+.tray-item .ti-qr svg{width:100%; height:100%; display:block;}
+.tray-item b{font-size:14px;}
+.tray-item .ti-m{font-size:12px; color:var(--ink-soft); line-height:1.7;}
+.guide h3{font-size:14px; margin:16px 0 6px; color:var(--brand-deep);}
+.guide p, .guide li{font-size:13px; line-height:1.8; color:var(--ink);}
+.guide ul, .guide ol{margin:4px 0 8px; padding-left:1.4em;}
+.guide table{border-collapse:collapse; font-size:12.5px; margin:6px 0 10px;}
+.guide th, .guide td{border:1px solid var(--line); padding:5px 10px; text-align:left;}
+.guide th{background:var(--brand-soft);}
+details.vd{border:1px solid var(--line); border-radius:12px; padding:10px 14px; margin-bottom:12px; background:#fff;}
+details.vd > summary{cursor:pointer; font-weight:800; font-size:14.5px; color:var(--brand-deep);}
+pre.out{white-space:pre-wrap; word-break:break-all; background:#f4f7f8; border:1px solid var(--line); border-radius:10px; padding:10px; font-size:12.5px; max-height:340px; overflow:auto; margin:8px 0;}
+.pstat{font-size:12.5px; line-height:1.8; margin:6px 0; padding:8px 10px; background:#f4f7f8; border-radius:8px;}
+.pstat .miss{color:var(--accent); font-weight:700;}
+.pstat .ok{color:#2a7d46; font-weight:700;}
+.small{font-size:11.5px; color:var(--muted);}
+
+/* ===== モーダル ===== */
+#wipeDlg{position:fixed; inset:0; z-index:200; display:none; align-items:center; justify-content:center; background:rgba(8,14,30,.7); padding:16px;}
+#wipeDlg.open{display:flex;}
+#wipeDlg .box{background:#fff; max-width:520px; width:100%; border-radius:16px; padding:20px 20px 18px; max-height:92vh; overflow:auto;}
+#wipeDlg h3{margin:0 0 8px; font-size:17px; color:var(--accent);}
+#wipeDlg p, #wipeDlg li{font-size:13px; line-height:1.8;}
+#wipeDlg ul{margin:6px 0 10px; padding-left:1.3em;}
+
+/* ===== 印刷(データ保管QR) ===== */
+#printRoot{display:none;}
+@media print{
+  body{background:#fff !important; padding:0 !important;}
+  #hero,#viewVault,#wipeDlg,.back-btn,#toast{display:none !important;}
+  body.printing-vault #viewMimamori{display:none !important;}
+  body.printing-vault #printRoot{display:block !important;}
+  body:not(.printing-vault) #printRoot{display:none !important;}
+  #printRoot .pg{page-break-after:always; break-after:page; padding:0;}
+  #printRoot .pg:last-child{page-break-after:auto; break-after:auto;}
+  #printRoot *{-webkit-print-color-adjust:exact; print-color-adjust:exact;}
+}
+#printRoot{color:#000; font-family:"Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo",system-ui,sans-serif;}
+#printRoot h2{font-size:15pt; margin:0 0 3mm;}
+#printRoot .pn{font-size:9.5pt; line-height:1.6; margin:0 0 4mm;}
+#printRoot .cells{display:flex; flex-wrap:wrap; gap:5mm; align-items:flex-start;}
+#printRoot .qc{border:0.3mm dashed #555; padding:2mm; break-inside:avoid; page-break-inside:avoid; text-align:center; font-size:7.5pt; line-height:1.35; background:#fff;}
+#printRoot .qs{position:relative; overflow:hidden; margin:0 auto; background:#fff;}
+#printRoot .qs svg{position:absolute; top:0; display:block;}
+#printRoot .ql{margin-top:1mm;}
+#printRoot .tick{position:absolute; width:0; height:0; border-left:1.6mm solid transparent; border-right:1.6mm solid transparent;}
+#printRoot .tk-t{top:0; border-top:2.4mm solid #d00;}
+#printRoot .tk-b{bottom:0; border-bottom:2.4mm solid #d00;}
+#printRoot table{border-collapse:collapse; font-size:9.5pt; width:100%;}
+#printRoot th, #printRoot td{border:0.2mm solid #666; padding:1.2mm 2mm; text-align:left;}
+/* スマホ幅:カードが縦並びのとき、高さがつぶれて重なるのを防ぐ */
+@media (max-width:900px){ .sheet{flex-direction:column;} .pcard{flex:0 0 auto;} }
+@media (max-width:900px){ #viewMimamori .wrap{grid-template-columns:minmax(0,1fr);} #viewMimamori .form,#viewMimamori .prev-col{min-width:0;} #viewMimamori .sheet{width:100%;} }
+</style>
+</head>
+<body class="is-hero">
+<!-- ============ ヒーロー(入口) ============ -->
+<section id="hero">
+  <div class="hero-in">
+    <svg class="hero-mark" viewBox="0 0 96 96" aria-hidden="true">
+      <rect x="6" y="6" width="84" height="84" rx="16" fill="#12284f" stroke="#8fd0ff" stroke-width="3"/>
+      <g fill="#8fd0ff"><rect x="18" y="18" width="20" height="20" rx="3"/><rect x="58" y="18" width="20" height="20" rx="3"/><rect x="18" y="58" width="20" height="20" rx="3"/></g>
+      <g fill="#12284f"><rect x="23" y="23" width="10" height="10"/><rect x="63" y="23" width="10" height="10"/><rect x="23" y="63" width="10" height="10"/></g>
+      <g fill="#8fd0ff"><rect x="44" y="18" width="8" height="8"/><rect x="44" y="32" width="8" height="8"/><rect x="18" y="44" width="8" height="8"/><rect x="32" y="44" width="8" height="8"/></g>
+      <rect x="52" y="52" width="26" height="26" rx="5" fill="#ffb25a"/>
+      <path d="M58 56v-4a7 7 0 0 1 14 0v4" fill="none" stroke="#12284f" stroke-width="3.4" stroke-linecap="round" transform="translate(0 -1)"/>
+      <rect x="56" y="58" width="18" height="14" rx="3" fill="#12284f"/><circle cx="65" cy="65" r="2.4" fill="#ffb25a"/>
+    </svg>
+    <h1>紙のQR金庫</h1>
+    <p class="sub">データ物理保存QRメーカー</p>
+    <p class="lead">スマホの電話帳・アプリのURL・ID／パスワードなど「文字にできるデータ」を、QRコードにして<b>紙で保管</b>します。ネットに置かないので、サイバー攻撃・乗っ取り・端末の紛失や故障のときの最後のバックアップになります。必要なときだけ紙を取り出して使い、印刷が終わったらこの端末のデータはすべて削除します。</p>
+    <div class="hero-btns">
+      <button type="button" class="hero-btn" data-go="vault">
+        <span class="hb-ico">🗄</span><span class="hb-t">データ保管QRメーカー</span>
+        <span class="hb-s">電話帳・アプリURL・ID／パスワード・2段階認証コードなどを、QRにして溜めて、まとめて印刷</span>
+      </button>
+      <button type="button" class="hero-btn b2" data-go="mimamori">
+        <span class="hb-ico">🆘</span><span class="hb-t">見守りQR連絡先カードメーカー</span>
+        <span class="hb-s">迷子・緊急時に見てもらう連絡先カード。QRと連絡先、医療情報を、A4に2枚印刷</span>
+      </button>
+    </div>
+    <ul class="hero-pts">
+      <li>🔌 <b>外部に通信しません。</b>入力した内容は、この画面の中だけで処理します。機内モードで使うのがおすすめです。</li>
+      <li>🧹 <b>印刷が終わったら全削除。</b>入力データ・QR・ローカルストレージを、ボタン1つで消せます。</li>
+      <li>✂ <b>重要データは半分に切って別々に保管。</b>左半分・右半分を別ページに印刷します(2枚そろわないと読めません)。</li>
+      <li>🔒 <b>パスフレーズで暗号化(AES-256)。</b>紙を拾われても、中身は読めません。</li>
+    </ul>
+    <p class="hero-foot">※このツールが入っているファイル自体は、ネットに置かず端末に保存して使うと、より安全です。</p>
+  </div>
+</section>
+
+<!-- ============ データ保管QRメーカー ============ -->
+<div id="viewVault" class="view" hidden>
+<div class="v-wrap">
+  <button type="button" class="back-btn" data-go="hero">← トップへ戻る</button>
+  <div class="v-head">
+    <h1>🗄 データ保管QRメーカー</h1>
+    <p class="lede">スマホのデータをQRコードにして紙で保管するためのツールです。作ったQRを「トレイ」に溜めて、まとめて印刷 → 印刷後に全データを削除します。</p>
+  </div>
+  <ol class="flow">
+    <li>データを入力・取り込む</li>
+    <li>QRの設定(圧縮・暗号化・半分カット)</li>
+    <li>トレイに溜める</li>
+    <li>試し読み → 印刷</li>
+    <li>全データ削除</li>
+  </ol>
+
+  <div class="alert">⚠ <b>ここに入力するのは、パスワードなどの機密情報です。</b>周りに人がいない場所で、機内モード(または通信を切った状態)で作業してください。書き出したCSV／vCardファイルは中身が丸見えなので、取り込んだらすぐ削除します。</div>
+
+  <!-- 手順・ガイド -->
+  <details class="vd guide" id="guideBox">
+    <summary>📖 手順・文字数・圧縮のしくみ(はじめに読んでください)</summary>
+    <h3>① スマホからデータを書き出す</h3>
+    <ul>
+      <li><b>電話帳</b>:iPhone＝「連絡先」または iCloud.com から vCard(.vcf)を書き出し／Android＝「連絡先」アプリ → 設定 → エクスポート(.vcf)、または Google連絡先からCSV。</li>
+      <li><b>ID／パスワード</b>:Chrome／Googleパスワードマネージャー → 設定 → 「パスワードをエクスポート」(CSV)／iPhone＝設定 → パスワード →「…」→ エクスポート。使っているパスワード管理アプリのCSV書き出しも使えます。</li>
+      <li><b>アプリの一覧とURL</b>:アプリ名とストアまたは公式サイトのURLを、1行1件で貼り付けます(自動の書き出しはできないため、画面を見ながら入力)。</li>
+      <li><b>その他</b>:2段階認証のバックアップコード、Wi-Fi、SIMの暗証番号、契約番号などは、各タブに入力します。文字にできるものは、自由メモに何でも入れられます。</li>
+    </ul>
+    <h3>② 取り込み方</h3>
+    <p>各タブの「ファイルを選ぶ」(.vcf／.csv／.txt)か、「貼り付けて取り込む」を使います。1行1件、項目はタブまたはカンマ区切りです。データは追加されるので、何回かに分けて取り込めます。</p>
+    <h3>③ QRにするときの文字数・容量</h3>
+    <p>QRコード1枚に入る量には限りがあります(最大サイズ・バイトモード)。<b>日本語は1文字が約3バイト、半角英数字は1バイト</b>です。</p>
+    <table>
+      <tr><th>誤り訂正レベル</th><th>最大バイト数</th><th>日本語の最大文字数(目安)</th><th>特徴</th></tr>
+      <tr><td>L(約7%復元)</td><td>2,953</td><td>約980字</td><td>容量最大。汚れ・折れに弱い</td></tr>
+      <tr><td>M(約15%復元)</td><td>2,331</td><td>約770字</td><td>標準(おすすめ)</td></tr>
+      <tr><td>Q(約25%復元)</td><td>1,663</td><td>約550字</td><td>汚れに強い</td></tr>
+      <tr><td>H(約30%復元)</td><td>1,273</td><td>約420字</td><td>最も強い。容量は最小</td></tr>
+    </table>
+    <p>ただし最大サイズのQRは、とても細かくて、読み取りにくくなります。このツールでは<b>1枚あたりの容量を、小(約400バイト)／標準(約800バイト)／大(約1,400バイト)</b>から選び、超えた分は<b>自動で複数枚に分割</b>します。各QRには「セットID・何枚目／全何枚」が入っているので、順番がばらばらでも復元できます。印刷が細かすぎる場合は、画面に警告が出ます。</p>
+    <h3>④ 圧縮と暗号化(自動で選びます)</h3>
+    <ul>
+      <li><b>圧縮(deflate)</b>:データを小さくしてから、文字(Base64)に直してQRに入れます。Base64で約1.33倍に増えるため、<b>圧縮しても小さくならないデータは、そのまま(テキスト)で入れます。</b>電話帳のように同じ文字が多いデータほど効果があります。</li>
+      <li><b>テキストのまま</b>:スマホの標準カメラで読むと、中身がそのまま表示されます。復元ツールが不要で、いちばん確実です。</li>
+      <li><b>暗号化(AES-256-GCM)</b>:パスフレーズから鍵を作って暗号化します。<b>パスフレーズを忘れると、誰にも復元できません。</b>パスフレーズはQRと別の場所(記憶・別の紙)に保管してください。</li>
+      <li>圧縮・暗号化したQRは、スマホで読み取った文字を、このツールの「④ 復元」に貼り付けると元に戻ります。</li>
+    </ul>
+    <h3>⑤ 重要なデータは「半分に切って別々に保管」</h3>
+    <p>パスワードや2段階認証コードのQRは、<b>「半分カット」</b>で印刷できます。左半分(A)と右半分(B)が別のページに印刷されるので、切り取って<b>別々の場所(例:自宅の金庫と、実家や貸金庫)</b>に保管します。片方だけでは読めません。読むときは、2枚を赤い目印をそろえて平らに合わせ(テープで裏から仮止め)、スマホで読み取ります。さらに暗号化すると、万一2枚そろっても、パスフレーズなしでは読めません。</p>
+    <h3>⑥ 印刷・保管のコツ</h3>
+    <ul>
+      <li>白い普通紙に、自宅のプリンターで印刷します(コンビニ・ネットプリントは、データが残る可能性があるため避けます)。レーザー印刷は水にぬれても滲みにくく、おすすめです。</li>
+      <li>1枚あたりの大きさは、5cm前後がおすすめです。感熱紙・光沢紙は、反射や退色で読みにくくなります。</li>
+      <li>印刷したら<b>必ず1枚、スマホで読み取りテスト</b>してから、データを削除してください(削除後は、この端末では作り直せません)。</li>
+      <li>保管は、耐火金庫・封筒に入れて湿気と直射日光を避けます。保管場所は、信頼できる家族にだけ伝えます。</li>
+      <li>パスワードを変えたら、古いQRはシュレッダーで処分し、作り直します。年に1回の見直しがおすすめです。</li>
+    </ul>
+    <h3>⑦ 印刷後にすること</h3>
+    <ul>
+      <li>この画面の「全データ削除」で、入力データ・QR・ローカルストレージ・コピーした内容を消去します。</li>
+      <li>手作業で消すもの:書き出したCSV／vCardファイル(ゴミ箱も空に)、ブラウザの閲覧履歴、プリンターの印刷履歴、PDFで保存した場合はそのPDF。</li>
+    </ul>
+  </details>
+
+  <!-- ① 入力 -->
+  <section class="vcard">
+    <h2><span class="stepno">1</span> データを入力・取り込む</h2>
+    <p class="sub">入力した内容は、この画面を閉じるか「全データ削除」を押すと消えます(トレイに溜めたQRだけが、設定により端末に残ります)。</p>
+    <div class="tabs" id="vTabs"></div>
+    <div id="vPanel"></div>
+  </section>
+
+  <!-- ② 設定 -->
+  <section class="vcard">
+    <h2><span class="stepno">2</span> QRの設定</h2>
+    <p class="sub">QRにする項目を選び、圧縮・暗号化・半分カットなどを決めます。</p>
+    <div class="opts">
+      <div class="full"><label>QRにする項目</label><div id="vSel" class="checks"></div></div>
+      <div><label for="oGroup">セットの分け方</label>
+        <select id="oGroup"><option value="sep">項目ごとに別々のQRセット(おすすめ)</option><option value="merge">選んだ項目を1つのQRセットにまとめる</option></select></div>
+      <div><label for="oSize">1枚あたりの容量</label>
+        <select id="oSize"><option value="400">小:約400バイト(読み取りやすい・枚数は増える)</option><option value="800" selected>標準:約800バイト</option><option value="1400">大:約1,400バイト(細かい・枚数は減る)</option></select></div>
+      <div><label for="oLevel">誤り訂正レベル</label>
+        <select id="oLevel"><option value="L">L(容量最大)</option><option value="M" selected>M(標準)</option><option value="Q">Q(汚れに強い)</option><option value="H">H(最も強い)</option></select></div>
+      <div><label for="oComp">圧縮</label>
+        <select id="oComp"><option value="auto" selected>自動(小さくなるときだけ圧縮)</option><option value="off">しない(スマホのカメラで直接読める)</option></select></div>
+      <div><label for="oEncScope">パスフレーズで暗号化</label>
+        <select id="oEncScope"><option value="imp" selected>重要な項目だけ(おすすめ)</option><option value="all">すべて</option><option value="none">しない</option></select></div>
+      <div><label for="oPass">パスフレーズ(8文字以上・QRと別に保管)</label>
+        <input type="password" id="oPass" autocomplete="new-password" placeholder="暗号化するときだけ入力"></div>
+      <div><label for="oHalfScope">半分カット(左右に分けて別々に印刷)</label>
+        <select id="oHalfScope"><option value="imp" selected>重要な項目だけ(おすすめ)</option><option value="all">すべて</option><option value="none">しない</option></select></div>
+      <div><label for="oStore">QRトレイの保存先</label>
+        <select id="oStore"><option value="ls" selected>この端末(ローカルストレージ)に一時保存して溜める</option><option value="mem">保存しない(この画面を開いている間だけ)</option></select></div>
+    </div>
+    <p class="hint" id="oEncNote"></p>
+    <div class="plan-wrap"><table class="plan" id="vPlan"></table></div>
+    <div class="btnrow"><button type="button" class="vb pri" id="btnAdd">➕ QRを作ってトレイに溜める</button></div>
+    <p class="hint">ボタンを押すと、選んだ項目からQRセットを作ります。入力欄のデータは、そのまま残ります(あとで追加・修正して、作り直せます)。</p>
+  </section>
+
+  <!-- ③ トレイ -->
+  <section class="vcard">
+    <h2><span class="stepno">3</span> QRトレイ(溜めたQR)と印刷</h2>
+    <p class="sub">溜まったQRを、まとめて印刷します。印刷前に、必ず1枚スマホで試し読みしてください。</p>
+    <div id="vTray"></div>
+    <div class="opts">
+      <div><label for="pSize">QRの印刷サイズ(1辺)</label>
+        <select id="pSize"><option value="40">40mm</option><option value="50" selected>50mm</option><option value="60">60mm</option><option value="70">70mm</option></select></div>
+      <div><label class="chk" style="margin-top:22px;"><input type="checkbox" id="pCover" checked> 目次ページ(何が入っているか・使い方)を付ける</label></div>
+    </div>
+    <p class="hint" id="pWarn"></p>
+    <div class="btnrow">
+      <button type="button" class="vb pri" id="btnPrintV">🖨 トレイのQRを、すべて印刷</button>
+      <button type="button" class="vb dng" id="btnWipeV">🧹 印刷が終わった → 全データ削除</button>
+    </div>
+  </section>
+
+  <!-- ④ 復元 -->
+  <section class="vcard">
+    <h2><span class="stepno">4</span> 復元(試し読み・実際に使うとき)</h2>
+    <p class="sub">スマホのカメラでQRを読み取り、表示された文字をコピーして、ここに貼り付けます。1枚ずつ「追加」してください。全部そろうと復元できます。</p>
+    <label for="vrIn">読み取った文字(1枚分ずつ)</label>
+    <textarea id="vrIn" rows="3" placeholder="QV1.… で始まる文字を貼り付け"></textarea>
+    <div class="btnrow"><button type="button" class="vb" id="btnPartAdd">この1枚を追加</button><button type="button" class="vb dng" id="btnPartClear">追加した分をクリア</button></div>
+    <div id="vrList"></div>
+    <div class="opts"><div><label for="vrPass">パスフレーズ(暗号化したときだけ)</label><input type="password" id="vrPass" autocomplete="off"></div></div>
+    <div class="btnrow"><button type="button" class="vb pri" id="btnRestore">復元する</button></div>
+    <div id="vrOutWrap" hidden>
+      <pre class="out" id="vrOut"></pre>
+      <div class="btnrow"><button type="button" class="vb" id="btnRCopy">📋 コピー</button><button type="button" class="vb" id="btnRSave">💾 テキストで保存</button><button type="button" class="vb dng" id="btnRClear">画面から消す</button></div>
+    </div>
+  </section>
+</div>
+</div>
+
+<!-- ============ 全データ削除ダイアログ ============ -->
+<div id="wipeDlg" role="dialog" aria-modal="true" aria-labelledby="wipeT">
+  <div class="box">
+    <h3 id="wipeT">🧹 印刷は終わりましたか？</h3>
+    <div id="wipeBody">
+      <p>印刷が終わっていれば、この端末に残っているデータを<b>すべて削除</b>します。</p>
+      <ul>
+        <li>入力した電話帳・ID／パスワードなどの全データ</li>
+        <li>QRトレイ(溜めたQR)</li>
+        <li>ローカルストレージ(見守りカードの入力・写真を含む)</li>
+        <li>復元画面の内容・コピーした内容</li>
+      </ul>
+      <p><b>先に、印刷した紙を、スマホで1枚読み取って確認してください。</b>削除後は、この端末で作り直すことはできません。</p>
+    </div>
+    <div class="btnrow">
+      <button type="button" class="vb dng" id="wipeYes">はい、すべて削除する</button>
+      <button type="button" class="vb" id="wipeNo">まだ(残す)</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 印刷用 ============ -->
+<div id="printRoot"></div>
+
+<div id="viewMimamori" class="view" hidden>
+
+  <div class="masthead"><button type="button" class="back-btn" data-go="hero">← トップへ戻る</button>
+    <h1>みまもりQR ＆ 緊急連絡先カード メーカー</h1>
+    <p class="lede">カード1（緊急連絡先・個人情報＋4つのQR）とカード2（重要情報・保管用）をA4に2枚作成。点線で切り取って使えます。入力内容はこの端末にだけ保存されます。</p>
+  </div>
+
+  <div class="wrap">
+    <!-- ============ FORM ============ -->
+    <form class="form" id="form" autocomplete="off">
+      <fieldset class="fs">
+        <legend>カード設定 <span class="tag">見た目</span></legend>
+        <div class="row">
+          <label for="fTitle">カードのタイトル</label>
+          <input type="text" id="fTitle" placeholder="例：みまもりカード / 緊急連絡カード" value="みまもりカード">
+        </div>
+        <label>テーマカラー</label>
+        <div class="swatches" id="swatches"></div>
+      </fieldset>
+
+      <fieldset class="fs">
+        <legend>本人情報 <span class="tag">カードに表示</span></legend>
+        <div class="row">
+          <label>本人写真</label>
+          <div class="photo-row">
+            <div class="photo-prev" id="photoPrev">写真<br>なし</div>
+            <div>
+              <input type="file" id="fPhoto" accept="image/*" style="display:none">
+              <button type="button" class="btn-mini" id="photoPick">写真を選ぶ</button>
+              <button type="button" class="btn-mini" id="photoClear" style="margin-left:6px;">削除</button>
+              <label class="chk" style="margin-top:8px;"><input type="checkbox" id="fShowPhoto" checked> カードに写真を表示</label>
+            </div>
+          </div>
+          <p class="hint">写真は端末内でのみ扱われます（QRコードには含まれません）。</p>
+        </div>
+        <div class="row two">
+          <div><label for="fName">お名前</label><input type="text" id="fName" placeholder="例：山田 花子"></div>
+          <div><label for="fFuri">ふりがな</label><input type="text" id="fFuri" placeholder="例：やまだ はなこ"></div>
+        </div>
+        <div class="row three">
+          <div><label for="fBirth">生年月日</label><input type="text" id="fBirth" placeholder="例：2016/04/01"></div>
+          <div><label for="fBlood">血液型</label>
+            <select id="fBlood"><option value="">未設定</option><option>A型</option><option>B型</option><option>O型</option><option>AB型</option><option>不明</option></select>
+          </div>
+          <div><label for="fGender">性別など</label><input type="text" id="fGender" placeholder="任意"></div>
+        </div>
+        <div class="row"><div><label for="fAddr">住所</label><input type="text" id="fAddr" placeholder="例：神戸市〇〇区…"></div></div>
+        <div class="row two">
+          <div><label for="fAllergy">アレルギー</label><input type="text" id="fAllergy" placeholder="例：卵・そば"></div>
+          <div><label for="fCond">持病・服薬</label><input type="text" id="fCond" placeholder="例：てんかん / 〇〇薬"></div>
+        </div>
+        <div class="row"><div><label for="fMsg">ひとことメッセージ</label>
+          <input type="text" id="fMsg" placeholder="例：見かけたら下記へご連絡ください"></div></div>
+      </fieldset>
+
+      <fieldset class="fs">
+        <legend>緊急連絡先 <span class="tag">複数可</span></legend>
+        <div id="contacts"></div>
+        <button type="button" class="add-btn" id="addContact">＋ 連絡先を追加</button>
+      </fieldset>
+
+      <fieldset class="fs private-fs">
+        <legend>重要情報の記録 <span class="tag warn">非公開・QRに含めません</span></legend>
+        <div class="warnbox">⚠ ここから下は マイナンバー・口座・免許証 などの重要情報です。<b>QRコードには一切含まれません。</b>印刷した紙は持ち歩かず、金庫など安全な場所に保管してください。</div>
+
+        <div class="subsec"><div class="subsec-t">🏦 金融機関情報</div>
+          <div id="banks"></div>
+          <button type="button" class="add-btn" data-add="bank">＋ 口座を追加</button>
+        </div>
+
+        <div class="subsec"><div class="subsec-t">🪪 マイナンバー情報</div>
+          <div class="row two">
+            <div><label for="fMynum">マイナンバー（12桁）</label><input type="text" id="fMynum" inputmode="numeric" placeholder="例：1234 5678 9012"></div>
+            <div><label for="fMynumStore">カードの保管場所</label><input type="text" id="fMynumStore" placeholder="例：自宅の金庫"></div>
+          </div>
+        </div>
+
+        <div class="subsec"><div class="subsec-t">🚗 免許証情報</div>
+          <div class="row three">
+            <div><label for="fLicNo">免許証番号</label><input type="text" id="fLicNo" placeholder="例：第000000000000号"></div>
+            <div><label for="fLicExp">有効期限</label><input type="text" id="fLicExp" placeholder="例：2028/07/01"></div>
+            <div><label for="fLicType">種類</label><input type="text" id="fLicType" placeholder="例：普通・中型"></div>
+          </div>
+          <div class="row"><div><label for="fLicStore">保管場所</label><input type="text" id="fLicStore" placeholder="任意"></div></div>
+        </div>
+
+        <div class="subsec"><div class="subsec-t">🏫 保育園・幼稚園・学校情報</div>
+          <div id="schools"></div>
+          <button type="button" class="add-btn" data-add="school">＋ 園・学校を追加</button>
+        </div>
+
+        <div class="subsec"><div class="subsec-t">🏢 勤務先情報</div>
+          <div id="works"></div>
+          <button type="button" class="add-btn" data-add="work">＋ 勤務先を追加</button>
+        </div>
+      </fieldset>
+
+      <fieldset class="fs">
+        <legend>QRに入れる内容 <span class="tag">カスタマイズ</span></legend>
+        <p class="hint" style="margin-top:0;">チェックした項目がQRコードに入り、スキャンした人が読み取れます。重要情報の記録（マイナンバー・口座・免許証など）はQRには入りません。</p>
+        <div class="checks" id="qrChecks"></div>
+        <div class="row two" style="margin-top:12px;">
+          <div><label for="fQrType">QRの形式</label>
+            <select id="fQrType">
+              <option value="text">テキスト（誰でも読める）</option>
+              <option value="vcard">vCard（連絡先アプリに登録しやすい）</option>
+            </select>
+          </div>
+          <div>
+            <label class="chk" style="margin-top:8px;"><input type="checkbox" id="fShowHot" checked> 緊急通報番号（110/119 等）を載せる</label>
+            <label class="chk" style="margin-top:6px;"><input type="checkbox" id="fShowSupport" checked> 相談・サポート窓口（#7119 等）を載せる</label>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="fs">
+        <legend>便利QR（安全・防災） <span class="tag">印刷時に選択</span></legend>
+        <p class="hint" style="margin-top:0;">チェックした便利QRがカード（印刷）に載ります。</p>
+        <div id="utilChecks"></div>
+      </fieldset>
+    </form>
+
+    <!-- ============ PREVIEW ============ -->
+    <div class="prev-col">
+      <p class="prev-label">プレビュー（A4に2枚・切り取り線に沿って切り出せます）</p>
+      <div class="sheet" id="sheet">
+
+        <!-- ===== Card 1: QR群 ＋ 写真 ===== -->
+        <div class="pcard" id="card1">
+          <div class="card-hd">
+            <h2 id="cTitle">みまもりカード</h2>
+            <span class="hd-sub">QR ＆ 写真</span>
+          </div>
+          <div class="card-body">
+            <div class="idrow">
+              <div class="idphoto" id="cPhoto">写真</div>
+              <div class="idmain">
+                <div class="idname" id="cName">お名前</div>
+                <div class="idfuri" id="cFuri"></div>
+              </div>
+            </div>
+
+            <div class="sec">
+              <div class="sec-t">📱 QRコード（読み取りで情報表示）</div>
+              <div class="qr-group" id="cQrGroup">
+                <div class="qg" id="cQrCell">
+                  <div class="qbox" id="cQr"></div>
+                  <div class="qg-l">緊急連絡先・個人情報</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-foot" id="cStamp"></div>
+          </div>
+        </div>
+
+        <!-- ===== Card 2: その他すべて ===== -->
+        <div class="pcard alt" id="card2">
+          <div class="card-hd alt">
+            <h2 id="cTitle2">連絡先・重要情報</h2>
+            <span class="hd-sub">保管用・PRIVATE</span>
+          </div>
+          <div class="card-body">
+            <div class="idrow slim">
+              <div class="idmain">
+                <div class="idname" id="cName2">お名前</div>
+                <div class="idmeta" id="cMeta"></div>
+              </div>
+            </div>
+            <div class="msg" id="cMsg" style="display:none;"></div>
+
+            <div class="sec" id="cMedSec" style="display:none;">
+              <div class="sec-t warn">⚠ 医療・注意情報</div>
+              <div class="med" id="cMed"></div>
+            </div>
+
+            <div class="sec">
+              <div class="sec-t">☎ 緊急連絡先</div>
+              <ul class="clist" id="cContacts"><li class="empty">連絡先を入力してください</li></ul>
+            </div>
+
+            <div class="sec" id="cHotSec">
+              <div class="sec-t warn">🚨 緊急通報（24時間・通話料無料）</div>
+              <div class="hot">
+                <div class="h"><span class="hn">110</span><span>警察（事件・事故・不審者）</span></div>
+                <div class="h"><span class="hn">119</span><span>消防・救急（火災・急病・けが）</span></div>
+                <div class="h"><span class="hn">118</span><span>海上保安庁（海の事件・事故）</span></div>
+                <div class="h"><span class="hn">171</span><span>災害用伝言ダイヤル（安否確認）</span></div>
+              </div>
+            </div>
+
+            <div class="sec" id="cSupportSec">
+              <div class="sec-t">☎ 相談・サポート窓口</div>
+              <div class="hot">
+                <div class="h"><span class="hn">#7119</span><span>救急相談（呼ぶか迷ったら）</span></div>
+                <div class="h"><span class="hn">#8000</span><span>小児救急電話相談（夜間・休日）</span></div>
+                <div class="h"><span class="hn">#9110</span><span>警察相談（DV・ストーカー等）</span></div>
+                <div class="h"><span class="hn">189</span><span>児童相談所虐待対応（匿名可）</span></div>
+                <div class="h"><span class="hn">#9910</span><span>道路緊急ダイヤル（道路異常）</span></div>
+                <div class="h"><span class="hn">188</span><span>消費者ホットライン</span></div>
+              </div>
+            </div>
+
+            <div class="warnbox" style="margin-top:14px;">🔒 重要情報を含みます。他人に見せない・持ち歩かない。安全な場所に保管してください（QRには含まれません）。</div>
+
+            <div id="cPrivate">
+              <div class="sec" id="cBankSec" style="display:none;"><div class="sec-t">🏦 金融機関</div><div id="cBanks"></div></div>
+              <div class="sec" id="cMynumSec" style="display:none;"><div class="sec-t">🪪 マイナンバー</div><div class="med" id="cMynum"></div></div>
+              <div class="sec" id="cLicSec" style="display:none;"><div class="sec-t">🚗 免許証</div><div class="med" id="cLic"></div></div>
+              <div class="sec" id="cSchoolSec" style="display:none;"><div class="sec-t">🏫 園・学校</div><div id="cSchools"></div></div>
+              <div class="sec" id="cWorkSec" style="display:none;"><div class="sec-t">🏢 勤務先</div><div id="cWorks"></div></div>
+              <div class="empty" id="cPrivEmpty">左のフォーム「重要情報の記録」に入力すると、ここに表示されます。</div>
+            </div>
+
+            <div class="card-foot" id="cStamp2"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button type="button" class="btn btn-print" id="btnPrint">🖨 印刷</button>
+    <button type="button" class="btn btn-img" id="btnImg">🖼 2枚を画像で保存</button>
+    <button type="button" class="btn btn-qr" id="btnQr">⬛ QRだけ保存</button>
+    <button type="button" class="btn btn-copy" id="btnCopy">📋 文字をコピー</button>
+    <button type="button" class="btn btn-share" id="btnShare">📤 共有</button>
+    <button type="button" class="btn btn-reset" id="btnReset">🗑 入力をリセット</button>
+    <button type="button" class="btn btn-reset" id="btnWipeM" style="border-color:#e2614a;color:#e2614a;">🧹 印刷が終わった → 全データ削除</button>
+  </div>
+  <p class="actions-note">ヒント：印刷（またはPDF保存）するとA4に2枚が横並びで出力され、点線で切り取れます。用紙サイズはA4・余白ありがおすすめです。</p>
+
+  
+
+
+</div>
+<div id="toast"></div>
+<script>
+//---------------------------------------------------------------------
+//
+// QR Code Generator for JavaScript
+//
+// Copyright (c) 2009 Kazuhiko Arase
+//
+// URL: http://www.d-project.com/
+//
+// Licensed under the MIT license:
+//  http://www.opensource.org/licenses/mit-license.php
+//
+// The word 'QR Code' is registered trademark of
+// DENSO WAVE INCORPORATED
+//  http://www.denso-wave.com/qrcode/faqpatent-e.html
+//
+//---------------------------------------------------------------------
+
+var qrcode = function() {
+
+  //---------------------------------------------------------------------
+  // qrcode
+  //---------------------------------------------------------------------
+
+  /**
+   * qrcode
+   * @param typeNumber 1 to 40
+   * @param errorCorrectionLevel 'L','M','Q','H'
+   */
+  var qrcode = function(typeNumber, errorCorrectionLevel) {
+
+    var PAD0 = 0xEC;
+    var PAD1 = 0x11;
+
+    var _typeNumber = typeNumber;
+    var _errorCorrectionLevel = QRErrorCorrectionLevel[errorCorrectionLevel];
+    var _modules = null;
+    var _moduleCount = 0;
+    var _dataCache = null;
+    var _dataList = [];
+
+    var _this = {};
+
+    var makeImpl = function(test, maskPattern) {
+
+      _moduleCount = _typeNumber * 4 + 17;
+      _modules = function(moduleCount) {
+        var modules = new Array(moduleCount);
+        for (var row = 0; row < moduleCount; row += 1) {
+          modules[row] = new Array(moduleCount);
+          for (var col = 0; col < moduleCount; col += 1) {
+            modules[row][col] = null;
+          }
+        }
+        return modules;
+      }(_moduleCount);
+
+      setupPositionProbePattern(0, 0);
+      setupPositionProbePattern(_moduleCount - 7, 0);
+      setupPositionProbePattern(0, _moduleCount - 7);
+      setupPositionAdjustPattern();
+      setupTimingPattern();
+      setupTypeInfo(test, maskPattern);
+
+      if (_typeNumber >= 7) {
+        setupTypeNumber(test);
+      }
+
+      if (_dataCache == null) {
+        _dataCache = createData(_typeNumber, _errorCorrectionLevel, _dataList);
+      }
+
+      mapData(_dataCache, maskPattern);
+    };
+
+    var setupPositionProbePattern = function(row, col) {
+
+      for (var r = -1; r <= 7; r += 1) {
+
+        if (row + r <= -1 || _moduleCount <= row + r) continue;
+
+        for (var c = -1; c <= 7; c += 1) {
+
+          if (col + c <= -1 || _moduleCount <= col + c) continue;
+
+          if ( (0 <= r && r <= 6 && (c == 0 || c == 6) )
+              || (0 <= c && c <= 6 && (r == 0 || r == 6) )
+              || (2 <= r && r <= 4 && 2 <= c && c <= 4) ) {
+            _modules[row + r][col + c] = true;
+          } else {
+            _modules[row + r][col + c] = false;
+          }
+        }
+      }
+    };
+
+    var getBestMaskPattern = function() {
+
+      var minLostPoint = 0;
+      var pattern = 0;
+
+      for (var i = 0; i < 8; i += 1) {
+
+        makeImpl(true, i);
+
+        var lostPoint = QRUtil.getLostPoint(_this);
+
+        if (i == 0 || minLostPoint > lostPoint) {
+          minLostPoint = lostPoint;
+          pattern = i;
+        }
+      }
+
+      return pattern;
+    };
+
+    var setupTimingPattern = function() {
+
+      for (var r = 8; r < _moduleCount - 8; r += 1) {
+        if (_modules[r][6] != null) {
+          continue;
+        }
+        _modules[r][6] = (r % 2 == 0);
+      }
+
+      for (var c = 8; c < _moduleCount - 8; c += 1) {
+        if (_modules[6][c] != null) {
+          continue;
+        }
+        _modules[6][c] = (c % 2 == 0);
+      }
+    };
+
+    var setupPositionAdjustPattern = function() {
+
+      var pos = QRUtil.getPatternPosition(_typeNumber);
+
+      for (var i = 0; i < pos.length; i += 1) {
+
+        for (var j = 0; j < pos.length; j += 1) {
+
+          var row = pos[i];
+          var col = pos[j];
+
+          if (_modules[row][col] != null) {
+            continue;
+          }
+
+          for (var r = -2; r <= 2; r += 1) {
+
+            for (var c = -2; c <= 2; c += 1) {
+
+              if (r == -2 || r == 2 || c == -2 || c == 2
+                  || (r == 0 && c == 0) ) {
+                _modules[row + r][col + c] = true;
+              } else {
+                _modules[row + r][col + c] = false;
+              }
+            }
+          }
+        }
+      }
+    };
+
+    var setupTypeNumber = function(test) {
+
+      var bits = QRUtil.getBCHTypeNumber(_typeNumber);
+
+      for (var i = 0; i < 18; i += 1) {
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+        _modules[Math.floor(i / 3)][i % 3 + _moduleCount - 8 - 3] = mod;
+      }
+
+      for (var i = 0; i < 18; i += 1) {
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+        _modules[i % 3 + _moduleCount - 8 - 3][Math.floor(i / 3)] = mod;
+      }
+    };
+
+    var setupTypeInfo = function(test, maskPattern) {
+
+      var data = (_errorCorrectionLevel << 3) | maskPattern;
+      var bits = QRUtil.getBCHTypeInfo(data);
+
+      // vertical
+      for (var i = 0; i < 15; i += 1) {
+
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+
+        if (i < 6) {
+          _modules[i][8] = mod;
+        } else if (i < 8) {
+          _modules[i + 1][8] = mod;
+        } else {
+          _modules[_moduleCount - 15 + i][8] = mod;
+        }
+      }
+
+      // horizontal
+      for (var i = 0; i < 15; i += 1) {
+
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+
+        if (i < 8) {
+          _modules[8][_moduleCount - i - 1] = mod;
+        } else if (i < 9) {
+          _modules[8][15 - i - 1 + 1] = mod;
+        } else {
+          _modules[8][15 - i - 1] = mod;
+        }
+      }
+
+      // fixed module
+      _modules[_moduleCount - 8][8] = (!test);
+    };
+
+    var mapData = function(data, maskPattern) {
+
+      var inc = -1;
+      var row = _moduleCount - 1;
+      var bitIndex = 7;
+      var byteIndex = 0;
+      var maskFunc = QRUtil.getMaskFunction(maskPattern);
+
+      for (var col = _moduleCount - 1; col > 0; col -= 2) {
+
+        if (col == 6) col -= 1;
+
+        while (true) {
+
+          for (var c = 0; c < 2; c += 1) {
+
+            if (_modules[row][col - c] == null) {
+
+              var dark = false;
+
+              if (byteIndex < data.length) {
+                dark = ( ( (data[byteIndex] >>> bitIndex) & 1) == 1);
+              }
+
+              var mask = maskFunc(row, col - c);
+
+              if (mask) {
+                dark = !dark;
+              }
+
+              _modules[row][col - c] = dark;
+              bitIndex -= 1;
+
+              if (bitIndex == -1) {
+                byteIndex += 1;
+                bitIndex = 7;
+              }
+            }
+          }
+
+          row += inc;
+
+          if (row < 0 || _moduleCount <= row) {
+            row -= inc;
+            inc = -inc;
+            break;
+          }
+        }
+      }
+    };
+
+    var createBytes = function(buffer, rsBlocks) {
+
+      var offset = 0;
+
+      var maxDcCount = 0;
+      var maxEcCount = 0;
+
+      var dcdata = new Array(rsBlocks.length);
+      var ecdata = new Array(rsBlocks.length);
+
+      for (var r = 0; r < rsBlocks.length; r += 1) {
+
+        var dcCount = rsBlocks[r].dataCount;
+        var ecCount = rsBlocks[r].totalCount - dcCount;
+
+        maxDcCount = Math.max(maxDcCount, dcCount);
+        maxEcCount = Math.max(maxEcCount, ecCount);
+
+        dcdata[r] = new Array(dcCount);
+
+        for (var i = 0; i < dcdata[r].length; i += 1) {
+          dcdata[r][i] = 0xff & buffer.getBuffer()[i + offset];
+        }
+        offset += dcCount;
+
+        var rsPoly = QRUtil.getErrorCorrectPolynomial(ecCount);
+        var rawPoly = qrPolynomial(dcdata[r], rsPoly.getLength() - 1);
+
+        var modPoly = rawPoly.mod(rsPoly);
+        ecdata[r] = new Array(rsPoly.getLength() - 1);
+        for (var i = 0; i < ecdata[r].length; i += 1) {
+          var modIndex = i + modPoly.getLength() - ecdata[r].length;
+          ecdata[r][i] = (modIndex >= 0)? modPoly.getAt(modIndex) : 0;
+        }
+      }
+
+      var totalCodeCount = 0;
+      for (var i = 0; i < rsBlocks.length; i += 1) {
+        totalCodeCount += rsBlocks[i].totalCount;
+      }
+
+      var data = new Array(totalCodeCount);
+      var index = 0;
+
+      for (var i = 0; i < maxDcCount; i += 1) {
+        for (var r = 0; r < rsBlocks.length; r += 1) {
+          if (i < dcdata[r].length) {
+            data[index] = dcdata[r][i];
+            index += 1;
+          }
+        }
+      }
+
+      for (var i = 0; i < maxEcCount; i += 1) {
+        for (var r = 0; r < rsBlocks.length; r += 1) {
+          if (i < ecdata[r].length) {
+            data[index] = ecdata[r][i];
+            index += 1;
+          }
+        }
+      }
+
+      return data;
+    };
+
+    var createData = function(typeNumber, errorCorrectionLevel, dataList) {
+
+      var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, errorCorrectionLevel);
+
+      var buffer = qrBitBuffer();
+
+      for (var i = 0; i < dataList.length; i += 1) {
+        var data = dataList[i];
+        buffer.put(data.getMode(), 4);
+        buffer.put(data.getLength(), QRUtil.getLengthInBits(data.getMode(), typeNumber) );
+        data.write(buffer);
+      }
+
+      // calc num max data.
+      var totalDataCount = 0;
+      for (var i = 0; i < rsBlocks.length; i += 1) {
+        totalDataCount += rsBlocks[i].dataCount;
+      }
+
+      if (buffer.getLengthInBits() > totalDataCount * 8) {
+        throw 'code length overflow. ('
+          + buffer.getLengthInBits()
+          + '>'
+          + totalDataCount * 8
+          + ')';
+      }
+
+      // end code
+      if (buffer.getLengthInBits() + 4 <= totalDataCount * 8) {
+        buffer.put(0, 4);
+      }
+
+      // padding
+      while (buffer.getLengthInBits() % 8 != 0) {
+        buffer.putBit(false);
+      }
+
+      // padding
+      while (true) {
+
+        if (buffer.getLengthInBits() >= totalDataCount * 8) {
+          break;
+        }
+        buffer.put(PAD0, 8);
+
+        if (buffer.getLengthInBits() >= totalDataCount * 8) {
+          break;
+        }
+        buffer.put(PAD1, 8);
+      }
+
+      return createBytes(buffer, rsBlocks);
+    };
+
+    _this.addData = function(data, mode) {
+
+      mode = mode || 'Byte';
+
+      var newData = null;
+
+      switch(mode) {
+      case 'Numeric' :
+        newData = qrNumber(data);
+        break;
+      case 'Alphanumeric' :
+        newData = qrAlphaNum(data);
+        break;
+      case 'Byte' :
+        newData = qr8BitByte(data);
+        break;
+      case 'Kanji' :
+        newData = qrKanji(data);
+        break;
+      default :
+        throw 'mode:' + mode;
+      }
+
+      _dataList.push(newData);
+      _dataCache = null;
+    };
+
+    _this.isDark = function(row, col) {
+      if (row < 0 || _moduleCount <= row || col < 0 || _moduleCount <= col) {
+        throw row + ',' + col;
+      }
+      return _modules[row][col];
+    };
+
+    _this.getModuleCount = function() {
+      return _moduleCount;
+    };
+
+    _this.make = function() {
+      if (_typeNumber < 1) {
+        var typeNumber = 1;
+
+        for (; typeNumber < 40; typeNumber++) {
+          var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, _errorCorrectionLevel);
+          var buffer = qrBitBuffer();
+
+          for (var i = 0; i < _dataList.length; i++) {
+            var data = _dataList[i];
+            buffer.put(data.getMode(), 4);
+            buffer.put(data.getLength(), QRUtil.getLengthInBits(data.getMode(), typeNumber) );
+            data.write(buffer);
+          }
+
+          var totalDataCount = 0;
+          for (var i = 0; i < rsBlocks.length; i++) {
+            totalDataCount += rsBlocks[i].dataCount;
+          }
+
+          if (buffer.getLengthInBits() <= totalDataCount * 8) {
+            break;
+          }
+        }
+
+        _typeNumber = typeNumber;
+      }
+
+      makeImpl(false, getBestMaskPattern() );
+    };
+
+    _this.createTableTag = function(cellSize, margin) {
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      var qrHtml = '';
+
+      qrHtml += '<table style="';
+      qrHtml += ' border-width: 0px; border-style: none;';
+      qrHtml += ' border-collapse: collapse;';
+      qrHtml += ' padding: 0px; margin: ' + margin + 'px;';
+      qrHtml += '">';
+      qrHtml += '<tbody>';
+
+      for (var r = 0; r < _this.getModuleCount(); r += 1) {
+
+        qrHtml += '<tr>';
+
+        for (var c = 0; c < _this.getModuleCount(); c += 1) {
+          qrHtml += '<td style="';
+          qrHtml += ' border-width: 0px; border-style: none;';
+          qrHtml += ' border-collapse: collapse;';
+          qrHtml += ' padding: 0px; margin: 0px;';
+          qrHtml += ' width: ' + cellSize + 'px;';
+          qrHtml += ' height: ' + cellSize + 'px;';
+          qrHtml += ' background-color: ';
+          qrHtml += _this.isDark(r, c)? '#000000' : '#ffffff';
+          qrHtml += ';';
+          qrHtml += '"/>';
+        }
+
+        qrHtml += '</tr>';
+      }
+
+      qrHtml += '</tbody>';
+      qrHtml += '</table>';
+
+      return qrHtml;
+    };
+
+    _this.createSvgTag = function(cellSize, margin, alt, title) {
+
+      var opts = {};
+      if (typeof arguments[0] == 'object') {
+        // Called by options.
+        opts = arguments[0];
+        // overwrite cellSize and margin.
+        cellSize = opts.cellSize;
+        margin = opts.margin;
+        alt = opts.alt;
+        title = opts.title;
+      }
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      // Compose alt property surrogate
+      alt = (typeof alt === 'string') ? {text: alt} : alt || {};
+      alt.text = alt.text || null;
+      alt.id = (alt.text) ? alt.id || 'qrcode-description' : null;
+
+      // Compose title property surrogate
+      title = (typeof title === 'string') ? {text: title} : title || {};
+      title.text = title.text || null;
+      title.id = (title.text) ? title.id || 'qrcode-title' : null;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var c, mc, r, mr, qrSvg='', rect;
+
+      rect = 'l' + cellSize + ',0 0,' + cellSize +
+        ' -' + cellSize + ',0 0,-' + cellSize + 'z ';
+
+      qrSvg += '<svg version="1.1" xmlns="http://www.w3.org/2000/svg"';
+      qrSvg += !opts.scalable ? ' width="' + size + 'px" height="' + size + 'px"' : '';
+      qrSvg += ' viewBox="0 0 ' + size + ' ' + size + '" ';
+      qrSvg += ' preserveAspectRatio="xMinYMin meet"';
+      qrSvg += (title.text || alt.text) ? ' role="img" aria-labelledby="' +
+          escapeXml([title.id, alt.id].join(' ').trim() ) + '"' : '';
+      qrSvg += '>';
+      qrSvg += (title.text) ? '<title id="' + escapeXml(title.id) + '">' +
+          escapeXml(title.text) + '</title>' : '';
+      qrSvg += (alt.text) ? '<description id="' + escapeXml(alt.id) + '">' +
+          escapeXml(alt.text) + '</description>' : '';
+      qrSvg += '<rect width="100%" height="100%" fill="white" cx="0" cy="0"/>';
+      qrSvg += '<path d="';
+
+      for (r = 0; r < _this.getModuleCount(); r += 1) {
+        mr = r * cellSize + margin;
+        for (c = 0; c < _this.getModuleCount(); c += 1) {
+          if (_this.isDark(r, c) ) {
+            mc = c*cellSize+margin;
+            qrSvg += 'M' + mc + ',' + mr + rect;
+          }
+        }
+      }
+
+      qrSvg += '" stroke="transparent" fill="black"/>';
+      qrSvg += '</svg>';
+
+      return qrSvg;
+    };
+
+    _this.createDataURL = function(cellSize, margin) {
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin;
+      var max = size - margin;
+
+      return createDataURL(size, size, function(x, y) {
+        if (min <= x && x < max && min <= y && y < max) {
+          var c = Math.floor( (x - min) / cellSize);
+          var r = Math.floor( (y - min) / cellSize);
+          return _this.isDark(r, c)? 0 : 1;
+        } else {
+          return 1;
+        }
+      } );
+    };
+
+    _this.createImgTag = function(cellSize, margin, alt) {
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+
+      var img = '';
+      img += '<img';
+      img += '\u0020src="';
+      img += _this.createDataURL(cellSize, margin);
+      img += '"';
+      img += '\u0020width="';
+      img += size;
+      img += '"';
+      img += '\u0020height="';
+      img += size;
+      img += '"';
+      if (alt) {
+        img += '\u0020alt="';
+        img += escapeXml(alt);
+        img += '"';
+      }
+      img += '/>';
+
+      return img;
+    };
+
+    var escapeXml = function(s) {
+      var escaped = '';
+      for (var i = 0; i < s.length; i += 1) {
+        var c = s.charAt(i);
+        switch(c) {
+        case '<': escaped += '&lt;'; break;
+        case '>': escaped += '&gt;'; break;
+        case '&': escaped += '&amp;'; break;
+        case '"': escaped += '&quot;'; break;
+        default : escaped += c; break;
+        }
+      }
+      return escaped;
+    };
+
+    var _createHalfASCII = function(margin) {
+      var cellSize = 1;
+      margin = (typeof margin == 'undefined')? cellSize * 2 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin;
+      var max = size - margin;
+
+      var y, x, r1, r2, p;
+
+      var blocks = {
+        '██': '█',
+        '█ ': '▀',
+        ' █': '▄',
+        '  ': ' '
+      };
+
+      var blocksLastLineNoMargin = {
+        '██': '▀',
+        '█ ': '▀',
+        ' █': ' ',
+        '  ': ' '
+      };
+
+      var ascii = '';
+      for (y = 0; y < size; y += 2) {
+        r1 = Math.floor((y - min) / cellSize);
+        r2 = Math.floor((y + 1 - min) / cellSize);
+        for (x = 0; x < size; x += 1) {
+          p = '█';
+
+          if (min <= x && x < max && min <= y && y < max && _this.isDark(r1, Math.floor((x - min) / cellSize))) {
+            p = ' ';
+          }
+
+          if (min <= x && x < max && min <= y+1 && y+1 < max && _this.isDark(r2, Math.floor((x - min) / cellSize))) {
+            p += ' ';
+          }
+          else {
+            p += '█';
+          }
+
+          // Output 2 characters per pixel, to create full square. 1 character per pixels gives only half width of square.
+          ascii += (margin < 1 && y+1 >= max) ? blocksLastLineNoMargin[p] : blocks[p];
+        }
+
+        ascii += '\n';
+      }
+
+      if (size % 2 && margin > 0) {
+        return ascii.substring(0, ascii.length - size - 1) + Array(size+1).join('▀');
+      }
+
+      return ascii.substring(0, ascii.length-1);
+    };
+
+    _this.createASCII = function(cellSize, margin) {
+      cellSize = cellSize || 1;
+
+      if (cellSize < 2) {
+        return _createHalfASCII(margin);
+      }
+
+      cellSize -= 1;
+      margin = (typeof margin == 'undefined')? cellSize * 2 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin;
+      var max = size - margin;
+
+      var y, x, r, p;
+
+      var white = Array(cellSize+1).join('██');
+      var black = Array(cellSize+1).join('  ');
+
+      var ascii = '';
+      var line = '';
+      for (y = 0; y < size; y += 1) {
+        r = Math.floor( (y - min) / cellSize);
+        line = '';
+        for (x = 0; x < size; x += 1) {
+          p = 1;
+
+          if (min <= x && x < max && min <= y && y < max && _this.isDark(r, Math.floor((x - min) / cellSize))) {
+            p = 0;
+          }
+
+          // Output 2 characters per pixel, to create full square. 1 character per pixels gives only half width of square.
+          line += p ? white : black;
+        }
+
+        for (r = 0; r < cellSize; r += 1) {
+          ascii += line + '\n';
+        }
+      }
+
+      return ascii.substring(0, ascii.length-1);
+    };
+
+    _this.renderTo2dContext = function(context, cellSize) {
+      cellSize = cellSize || 2;
+      var length = _this.getModuleCount();
+      for (var row = 0; row < length; row++) {
+        for (var col = 0; col < length; col++) {
+          context.fillStyle = _this.isDark(row, col) ? 'black' : 'white';
+          context.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
+        }
+      }
+    }
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrcode.stringToBytes
+  //---------------------------------------------------------------------
+
+  qrcode.stringToBytesFuncs = {
+    'default' : function(s) {
+      var bytes = [];
+      for (var i = 0; i < s.length; i += 1) {
+        var c = s.charCodeAt(i);
+        bytes.push(c & 0xff);
+      }
+      return bytes;
+    }
+  };
+
+  qrcode.stringToBytes = qrcode.stringToBytesFuncs['default'];
+
+  //---------------------------------------------------------------------
+  // qrcode.createStringToBytes
+  //---------------------------------------------------------------------
+
+  /**
+   * @param unicodeData base64 string of byte array.
+   * [16bit Unicode],[16bit Bytes], ...
+   * @param numChars
+   */
+  qrcode.createStringToBytes = function(unicodeData, numChars) {
+
+    // create conversion map.
+
+    var unicodeMap = function() {
+
+      var bin = base64DecodeInputStream(unicodeData);
+      var read = function() {
+        var b = bin.read();
+        if (b == -1) throw 'eof';
+        return b;
+      };
+
+      var count = 0;
+      var unicodeMap = {};
+      while (true) {
+        var b0 = bin.read();
+        if (b0 == -1) break;
+        var b1 = read();
+        var b2 = read();
+        var b3 = read();
+        var k = String.fromCharCode( (b0 << 8) | b1);
+        var v = (b2 << 8) | b3;
+        unicodeMap[k] = v;
+        count += 1;
+      }
+      if (count != numChars) {
+        throw count + ' != ' + numChars;
+      }
+
+      return unicodeMap;
+    }();
+
+    var unknownChar = '?'.charCodeAt(0);
+
+    return function(s) {
+      var bytes = [];
+      for (var i = 0; i < s.length; i += 1) {
+        var c = s.charCodeAt(i);
+        if (c < 128) {
+          bytes.push(c);
+        } else {
+          var b = unicodeMap[s.charAt(i)];
+          if (typeof b == 'number') {
+            if ( (b & 0xff) == b) {
+              // 1byte
+              bytes.push(b);
+            } else {
+              // 2bytes
+              bytes.push(b >>> 8);
+              bytes.push(b & 0xff);
+            }
+          } else {
+            bytes.push(unknownChar);
+          }
+        }
+      }
+      return bytes;
+    };
+  };
+
+  //---------------------------------------------------------------------
+  // QRMode
+  //---------------------------------------------------------------------
+
+  var QRMode = {
+    MODE_NUMBER :    1 << 0,
+    MODE_ALPHA_NUM : 1 << 1,
+    MODE_8BIT_BYTE : 1 << 2,
+    MODE_KANJI :     1 << 3
+  };
+
+  //---------------------------------------------------------------------
+  // QRErrorCorrectionLevel
+  //---------------------------------------------------------------------
+
+  var QRErrorCorrectionLevel = {
+    L : 1,
+    M : 0,
+    Q : 3,
+    H : 2
+  };
+
+  //---------------------------------------------------------------------
+  // QRMaskPattern
+  //---------------------------------------------------------------------
+
+  var QRMaskPattern = {
+    PATTERN000 : 0,
+    PATTERN001 : 1,
+    PATTERN010 : 2,
+    PATTERN011 : 3,
+    PATTERN100 : 4,
+    PATTERN101 : 5,
+    PATTERN110 : 6,
+    PATTERN111 : 7
+  };
+
+  //---------------------------------------------------------------------
+  // QRUtil
+  //---------------------------------------------------------------------
+
+  var QRUtil = function() {
+
+    var PATTERN_POSITION_TABLE = [
+      [],
+      [6, 18],
+      [6, 22],
+      [6, 26],
+      [6, 30],
+      [6, 34],
+      [6, 22, 38],
+      [6, 24, 42],
+      [6, 26, 46],
+      [6, 28, 50],
+      [6, 30, 54],
+      [6, 32, 58],
+      [6, 34, 62],
+      [6, 26, 46, 66],
+      [6, 26, 48, 70],
+      [6, 26, 50, 74],
+      [6, 30, 54, 78],
+      [6, 30, 56, 82],
+      [6, 30, 58, 86],
+      [6, 34, 62, 90],
+      [6, 28, 50, 72, 94],
+      [6, 26, 50, 74, 98],
+      [6, 30, 54, 78, 102],
+      [6, 28, 54, 80, 106],
+      [6, 32, 58, 84, 110],
+      [6, 30, 58, 86, 114],
+      [6, 34, 62, 90, 118],
+      [6, 26, 50, 74, 98, 122],
+      [6, 30, 54, 78, 102, 126],
+      [6, 26, 52, 78, 104, 130],
+      [6, 30, 56, 82, 108, 134],
+      [6, 34, 60, 86, 112, 138],
+      [6, 30, 58, 86, 114, 142],
+      [6, 34, 62, 90, 118, 146],
+      [6, 30, 54, 78, 102, 126, 150],
+      [6, 24, 50, 76, 102, 128, 154],
+      [6, 28, 54, 80, 106, 132, 158],
+      [6, 32, 58, 84, 110, 136, 162],
+      [6, 26, 54, 82, 110, 138, 166],
+      [6, 30, 58, 86, 114, 142, 170]
+    ];
+    var G15 = (1 << 10) | (1 << 8) | (1 << 5) | (1 << 4) | (1 << 2) | (1 << 1) | (1 << 0);
+    var G18 = (1 << 12) | (1 << 11) | (1 << 10) | (1 << 9) | (1 << 8) | (1 << 5) | (1 << 2) | (1 << 0);
+    var G15_MASK = (1 << 14) | (1 << 12) | (1 << 10) | (1 << 4) | (1 << 1);
+
+    var _this = {};
+
+    var getBCHDigit = function(data) {
+      var digit = 0;
+      while (data != 0) {
+        digit += 1;
+        data >>>= 1;
+      }
+      return digit;
+    };
+
+    _this.getBCHTypeInfo = function(data) {
+      var d = data << 10;
+      while (getBCHDigit(d) - getBCHDigit(G15) >= 0) {
+        d ^= (G15 << (getBCHDigit(d) - getBCHDigit(G15) ) );
+      }
+      return ( (data << 10) | d) ^ G15_MASK;
+    };
+
+    _this.getBCHTypeNumber = function(data) {
+      var d = data << 12;
+      while (getBCHDigit(d) - getBCHDigit(G18) >= 0) {
+        d ^= (G18 << (getBCHDigit(d) - getBCHDigit(G18) ) );
+      }
+      return (data << 12) | d;
+    };
+
+    _this.getPatternPosition = function(typeNumber) {
+      return PATTERN_POSITION_TABLE[typeNumber - 1];
+    };
+
+    _this.getMaskFunction = function(maskPattern) {
+
+      switch (maskPattern) {
+
+      case QRMaskPattern.PATTERN000 :
+        return function(i, j) { return (i + j) % 2 == 0; };
+      case QRMaskPattern.PATTERN001 :
+        return function(i, j) { return i % 2 == 0; };
+      case QRMaskPattern.PATTERN010 :
+        return function(i, j) { return j % 3 == 0; };
+      case QRMaskPattern.PATTERN011 :
+        return function(i, j) { return (i + j) % 3 == 0; };
+      case QRMaskPattern.PATTERN100 :
+        return function(i, j) { return (Math.floor(i / 2) + Math.floor(j / 3) ) % 2 == 0; };
+      case QRMaskPattern.PATTERN101 :
+        return function(i, j) { return (i * j) % 2 + (i * j) % 3 == 0; };
+      case QRMaskPattern.PATTERN110 :
+        return function(i, j) { return ( (i * j) % 2 + (i * j) % 3) % 2 == 0; };
+      case QRMaskPattern.PATTERN111 :
+        return function(i, j) { return ( (i * j) % 3 + (i + j) % 2) % 2 == 0; };
+
+      default :
+        throw 'bad maskPattern:' + maskPattern;
+      }
+    };
+
+    _this.getErrorCorrectPolynomial = function(errorCorrectLength) {
+      var a = qrPolynomial([1], 0);
+      for (var i = 0; i < errorCorrectLength; i += 1) {
+        a = a.multiply(qrPolynomial([1, QRMath.gexp(i)], 0) );
+      }
+      return a;
+    };
+
+    _this.getLengthInBits = function(mode, type) {
+
+      if (1 <= type && type < 10) {
+
+        // 1 - 9
+
+        switch(mode) {
+        case QRMode.MODE_NUMBER    : return 10;
+        case QRMode.MODE_ALPHA_NUM : return 9;
+        case QRMode.MODE_8BIT_BYTE : return 8;
+        case QRMode.MODE_KANJI     : return 8;
+        default :
+          throw 'mode:' + mode;
+        }
+
+      } else if (type < 27) {
+
+        // 10 - 26
+
+        switch(mode) {
+        case QRMode.MODE_NUMBER    : return 12;
+        case QRMode.MODE_ALPHA_NUM : return 11;
+        case QRMode.MODE_8BIT_BYTE : return 16;
+        case QRMode.MODE_KANJI     : return 10;
+        default :
+          throw 'mode:' + mode;
+        }
+
+      } else if (type < 41) {
+
+        // 27 - 40
+
+        switch(mode) {
+        case QRMode.MODE_NUMBER    : return 14;
+        case QRMode.MODE_ALPHA_NUM : return 13;
+        case QRMode.MODE_8BIT_BYTE : return 16;
+        case QRMode.MODE_KANJI     : return 12;
+        default :
+          throw 'mode:' + mode;
+        }
+
+      } else {
+        throw 'type:' + type;
+      }
+    };
+
+    _this.getLostPoint = function(qrcode) {
+
+      var moduleCount = qrcode.getModuleCount();
+
+      var lostPoint = 0;
+
+      // LEVEL1
+
+      for (var row = 0; row < moduleCount; row += 1) {
+        for (var col = 0; col < moduleCount; col += 1) {
+
+          var sameCount = 0;
+          var dark = qrcode.isDark(row, col);
+
+          for (var r = -1; r <= 1; r += 1) {
+
+            if (row + r < 0 || moduleCount <= row + r) {
+              continue;
+            }
+
+            for (var c = -1; c <= 1; c += 1) {
+
+              if (col + c < 0 || moduleCount <= col + c) {
+                continue;
+              }
+
+              if (r == 0 && c == 0) {
+                continue;
+              }
+
+              if (dark == qrcode.isDark(row + r, col + c) ) {
+                sameCount += 1;
+              }
+            }
+          }
+
+          if (sameCount > 5) {
+            lostPoint += (3 + sameCount - 5);
+          }
+        }
+      };
+
+      // LEVEL2
+
+      for (var row = 0; row < moduleCount - 1; row += 1) {
+        for (var col = 0; col < moduleCount - 1; col += 1) {
+          var count = 0;
+          if (qrcode.isDark(row, col) ) count += 1;
+          if (qrcode.isDark(row + 1, col) ) count += 1;
+          if (qrcode.isDark(row, col + 1) ) count += 1;
+          if (qrcode.isDark(row + 1, col + 1) ) count += 1;
+          if (count == 0 || count == 4) {
+            lostPoint += 3;
+          }
+        }
+      }
+
+      // LEVEL3
+
+      for (var row = 0; row < moduleCount; row += 1) {
+        for (var col = 0; col < moduleCount - 6; col += 1) {
+          if (qrcode.isDark(row, col)
+              && !qrcode.isDark(row, col + 1)
+              &&  qrcode.isDark(row, col + 2)
+              &&  qrcode.isDark(row, col + 3)
+              &&  qrcode.isDark(row, col + 4)
+              && !qrcode.isDark(row, col + 5)
+              &&  qrcode.isDark(row, col + 6) ) {
+            lostPoint += 40;
+          }
+        }
+      }
+
+      for (var col = 0; col < moduleCount; col += 1) {
+        for (var row = 0; row < moduleCount - 6; row += 1) {
+          if (qrcode.isDark(row, col)
+              && !qrcode.isDark(row + 1, col)
+              &&  qrcode.isDark(row + 2, col)
+              &&  qrcode.isDark(row + 3, col)
+              &&  qrcode.isDark(row + 4, col)
+              && !qrcode.isDark(row + 5, col)
+              &&  qrcode.isDark(row + 6, col) ) {
+            lostPoint += 40;
+          }
+        }
+      }
+
+      // LEVEL4
+
+      var darkCount = 0;
+
+      for (var col = 0; col < moduleCount; col += 1) {
+        for (var row = 0; row < moduleCount; row += 1) {
+          if (qrcode.isDark(row, col) ) {
+            darkCount += 1;
+          }
+        }
+      }
+
+      var ratio = Math.abs(100 * darkCount / moduleCount / moduleCount - 50) / 5;
+      lostPoint += ratio * 10;
+
+      return lostPoint;
+    };
+
+    return _this;
+  }();
+
+  //---------------------------------------------------------------------
+  // QRMath
+  //---------------------------------------------------------------------
+
+  var QRMath = function() {
+
+    var EXP_TABLE = new Array(256);
+    var LOG_TABLE = new Array(256);
+
+    // initialize tables
+    for (var i = 0; i < 8; i += 1) {
+      EXP_TABLE[i] = 1 << i;
+    }
+    for (var i = 8; i < 256; i += 1) {
+      EXP_TABLE[i] = EXP_TABLE[i - 4]
+        ^ EXP_TABLE[i - 5]
+        ^ EXP_TABLE[i - 6]
+        ^ EXP_TABLE[i - 8];
+    }
+    for (var i = 0; i < 255; i += 1) {
+      LOG_TABLE[EXP_TABLE[i] ] = i;
+    }
+
+    var _this = {};
+
+    _this.glog = function(n) {
+
+      if (n < 1) {
+        throw 'glog(' + n + ')';
+      }
+
+      return LOG_TABLE[n];
+    };
+
+    _this.gexp = function(n) {
+
+      while (n < 0) {
+        n += 255;
+      }
+
+      while (n >= 256) {
+        n -= 255;
+      }
+
+      return EXP_TABLE[n];
+    };
+
+    return _this;
+  }();
+
+  //---------------------------------------------------------------------
+  // qrPolynomial
+  //---------------------------------------------------------------------
+
+  function qrPolynomial(num, shift) {
+
+    if (typeof num.length == 'undefined') {
+      throw num.length + '/' + shift;
+    }
+
+    var _num = function() {
+      var offset = 0;
+      while (offset < num.length && num[offset] == 0) {
+        offset += 1;
+      }
+      var _num = new Array(num.length - offset + shift);
+      for (var i = 0; i < num.length - offset; i += 1) {
+        _num[i] = num[i + offset];
+      }
+      return _num;
+    }();
+
+    var _this = {};
+
+    _this.getAt = function(index) {
+      return _num[index];
+    };
+
+    _this.getLength = function() {
+      return _num.length;
+    };
+
+    _this.multiply = function(e) {
+
+      var num = new Array(_this.getLength() + e.getLength() - 1);
+
+      for (var i = 0; i < _this.getLength(); i += 1) {
+        for (var j = 0; j < e.getLength(); j += 1) {
+          num[i + j] ^= QRMath.gexp(QRMath.glog(_this.getAt(i) ) + QRMath.glog(e.getAt(j) ) );
+        }
+      }
+
+      return qrPolynomial(num, 0);
+    };
+
+    _this.mod = function(e) {
+
+      if (_this.getLength() - e.getLength() < 0) {
+        return _this;
+      }
+
+      var ratio = QRMath.glog(_this.getAt(0) ) - QRMath.glog(e.getAt(0) );
+
+      var num = new Array(_this.getLength() );
+      for (var i = 0; i < _this.getLength(); i += 1) {
+        num[i] = _this.getAt(i);
+      }
+
+      for (var i = 0; i < e.getLength(); i += 1) {
+        num[i] ^= QRMath.gexp(QRMath.glog(e.getAt(i) ) + ratio);
+      }
+
+      // recursive call
+      return qrPolynomial(num, 0).mod(e);
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // QRRSBlock
+  //---------------------------------------------------------------------
+
+  var QRRSBlock = function() {
+
+    var RS_BLOCK_TABLE = [
+
+      // L
+      // M
+      // Q
+      // H
+
+      // 1
+      [1, 26, 19],
+      [1, 26, 16],
+      [1, 26, 13],
+      [1, 26, 9],
+
+      // 2
+      [1, 44, 34],
+      [1, 44, 28],
+      [1, 44, 22],
+      [1, 44, 16],
+
+      // 3
+      [1, 70, 55],
+      [1, 70, 44],
+      [2, 35, 17],
+      [2, 35, 13],
+
+      // 4
+      [1, 100, 80],
+      [2, 50, 32],
+      [2, 50, 24],
+      [4, 25, 9],
+
+      // 5
+      [1, 134, 108],
+      [2, 67, 43],
+      [2, 33, 15, 2, 34, 16],
+      [2, 33, 11, 2, 34, 12],
+
+      // 6
+      [2, 86, 68],
+      [4, 43, 27],
+      [4, 43, 19],
+      [4, 43, 15],
+
+      // 7
+      [2, 98, 78],
+      [4, 49, 31],
+      [2, 32, 14, 4, 33, 15],
+      [4, 39, 13, 1, 40, 14],
+
+      // 8
+      [2, 121, 97],
+      [2, 60, 38, 2, 61, 39],
+      [4, 40, 18, 2, 41, 19],
+      [4, 40, 14, 2, 41, 15],
+
+      // 9
+      [2, 146, 116],
+      [3, 58, 36, 2, 59, 37],
+      [4, 36, 16, 4, 37, 17],
+      [4, 36, 12, 4, 37, 13],
+
+      // 10
+      [2, 86, 68, 2, 87, 69],
+      [4, 69, 43, 1, 70, 44],
+      [6, 43, 19, 2, 44, 20],
+      [6, 43, 15, 2, 44, 16],
+
+      // 11
+      [4, 101, 81],
+      [1, 80, 50, 4, 81, 51],
+      [4, 50, 22, 4, 51, 23],
+      [3, 36, 12, 8, 37, 13],
+
+      // 12
+      [2, 116, 92, 2, 117, 93],
+      [6, 58, 36, 2, 59, 37],
+      [4, 46, 20, 6, 47, 21],
+      [7, 42, 14, 4, 43, 15],
+
+      // 13
+      [4, 133, 107],
+      [8, 59, 37, 1, 60, 38],
+      [8, 44, 20, 4, 45, 21],
+      [12, 33, 11, 4, 34, 12],
+
+      // 14
+      [3, 145, 115, 1, 146, 116],
+      [4, 64, 40, 5, 65, 41],
+      [11, 36, 16, 5, 37, 17],
+      [11, 36, 12, 5, 37, 13],
+
+      // 15
+      [5, 109, 87, 1, 110, 88],
+      [5, 65, 41, 5, 66, 42],
+      [5, 54, 24, 7, 55, 25],
+      [11, 36, 12, 7, 37, 13],
+
+      // 16
+      [5, 122, 98, 1, 123, 99],
+      [7, 73, 45, 3, 74, 46],
+      [15, 43, 19, 2, 44, 20],
+      [3, 45, 15, 13, 46, 16],
+
+      // 17
+      [1, 135, 107, 5, 136, 108],
+      [10, 74, 46, 1, 75, 47],
+      [1, 50, 22, 15, 51, 23],
+      [2, 42, 14, 17, 43, 15],
+
+      // 18
+      [5, 150, 120, 1, 151, 121],
+      [9, 69, 43, 4, 70, 44],
+      [17, 50, 22, 1, 51, 23],
+      [2, 42, 14, 19, 43, 15],
+
+      // 19
+      [3, 141, 113, 4, 142, 114],
+      [3, 70, 44, 11, 71, 45],
+      [17, 47, 21, 4, 48, 22],
+      [9, 39, 13, 16, 40, 14],
+
+      // 20
+      [3, 135, 107, 5, 136, 108],
+      [3, 67, 41, 13, 68, 42],
+      [15, 54, 24, 5, 55, 25],
+      [15, 43, 15, 10, 44, 16],
+
+      // 21
+      [4, 144, 116, 4, 145, 117],
+      [17, 68, 42],
+      [17, 50, 22, 6, 51, 23],
+      [19, 46, 16, 6, 47, 17],
+
+      // 22
+      [2, 139, 111, 7, 140, 112],
+      [17, 74, 46],
+      [7, 54, 24, 16, 55, 25],
+      [34, 37, 13],
+
+      // 23
+      [4, 151, 121, 5, 152, 122],
+      [4, 75, 47, 14, 76, 48],
+      [11, 54, 24, 14, 55, 25],
+      [16, 45, 15, 14, 46, 16],
+
+      // 24
+      [6, 147, 117, 4, 148, 118],
+      [6, 73, 45, 14, 74, 46],
+      [11, 54, 24, 16, 55, 25],
+      [30, 46, 16, 2, 47, 17],
+
+      // 25
+      [8, 132, 106, 4, 133, 107],
+      [8, 75, 47, 13, 76, 48],
+      [7, 54, 24, 22, 55, 25],
+      [22, 45, 15, 13, 46, 16],
+
+      // 26
+      [10, 142, 114, 2, 143, 115],
+      [19, 74, 46, 4, 75, 47],
+      [28, 50, 22, 6, 51, 23],
+      [33, 46, 16, 4, 47, 17],
+
+      // 27
+      [8, 152, 122, 4, 153, 123],
+      [22, 73, 45, 3, 74, 46],
+      [8, 53, 23, 26, 54, 24],
+      [12, 45, 15, 28, 46, 16],
+
+      // 28
+      [3, 147, 117, 10, 148, 118],
+      [3, 73, 45, 23, 74, 46],
+      [4, 54, 24, 31, 55, 25],
+      [11, 45, 15, 31, 46, 16],
+
+      // 29
+      [7, 146, 116, 7, 147, 117],
+      [21, 73, 45, 7, 74, 46],
+      [1, 53, 23, 37, 54, 24],
+      [19, 45, 15, 26, 46, 16],
+
+      // 30
+      [5, 145, 115, 10, 146, 116],
+      [19, 75, 47, 10, 76, 48],
+      [15, 54, 24, 25, 55, 25],
+      [23, 45, 15, 25, 46, 16],
+
+      // 31
+      [13, 145, 115, 3, 146, 116],
+      [2, 74, 46, 29, 75, 47],
+      [42, 54, 24, 1, 55, 25],
+      [23, 45, 15, 28, 46, 16],
+
+      // 32
+      [17, 145, 115],
+      [10, 74, 46, 23, 75, 47],
+      [10, 54, 24, 35, 55, 25],
+      [19, 45, 15, 35, 46, 16],
+
+      // 33
+      [17, 145, 115, 1, 146, 116],
+      [14, 74, 46, 21, 75, 47],
+      [29, 54, 24, 19, 55, 25],
+      [11, 45, 15, 46, 46, 16],
+
+      // 34
+      [13, 145, 115, 6, 146, 116],
+      [14, 74, 46, 23, 75, 47],
+      [44, 54, 24, 7, 55, 25],
+      [59, 46, 16, 1, 47, 17],
+
+      // 35
+      [12, 151, 121, 7, 152, 122],
+      [12, 75, 47, 26, 76, 48],
+      [39, 54, 24, 14, 55, 25],
+      [22, 45, 15, 41, 46, 16],
+
+      // 36
+      [6, 151, 121, 14, 152, 122],
+      [6, 75, 47, 34, 76, 48],
+      [46, 54, 24, 10, 55, 25],
+      [2, 45, 15, 64, 46, 16],
+
+      // 37
+      [17, 152, 122, 4, 153, 123],
+      [29, 74, 46, 14, 75, 47],
+      [49, 54, 24, 10, 55, 25],
+      [24, 45, 15, 46, 46, 16],
+
+      // 38
+      [4, 152, 122, 18, 153, 123],
+      [13, 74, 46, 32, 75, 47],
+      [48, 54, 24, 14, 55, 25],
+      [42, 45, 15, 32, 46, 16],
+
+      // 39
+      [20, 147, 117, 4, 148, 118],
+      [40, 75, 47, 7, 76, 48],
+      [43, 54, 24, 22, 55, 25],
+      [10, 45, 15, 67, 46, 16],
+
+      // 40
+      [19, 148, 118, 6, 149, 119],
+      [18, 75, 47, 31, 76, 48],
+      [34, 54, 24, 34, 55, 25],
+      [20, 45, 15, 61, 46, 16]
+    ];
+
+    var qrRSBlock = function(totalCount, dataCount) {
+      var _this = {};
+      _this.totalCount = totalCount;
+      _this.dataCount = dataCount;
+      return _this;
+    };
+
+    var _this = {};
+
+    var getRsBlockTable = function(typeNumber, errorCorrectionLevel) {
+
+      switch(errorCorrectionLevel) {
+      case QRErrorCorrectionLevel.L :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 0];
+      case QRErrorCorrectionLevel.M :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 1];
+      case QRErrorCorrectionLevel.Q :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 2];
+      case QRErrorCorrectionLevel.H :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 3];
+      default :
+        return undefined;
+      }
+    };
+
+    _this.getRSBlocks = function(typeNumber, errorCorrectionLevel) {
+
+      var rsBlock = getRsBlockTable(typeNumber, errorCorrectionLevel);
+
+      if (typeof rsBlock == 'undefined') {
+        throw 'bad rs block @ typeNumber:' + typeNumber +
+            '/errorCorrectionLevel:' + errorCorrectionLevel;
+      }
+
+      var length = rsBlock.length / 3;
+
+      var list = [];
+
+      for (var i = 0; i < length; i += 1) {
+
+        var count = rsBlock[i * 3 + 0];
+        var totalCount = rsBlock[i * 3 + 1];
+        var dataCount = rsBlock[i * 3 + 2];
+
+        for (var j = 0; j < count; j += 1) {
+          list.push(qrRSBlock(totalCount, dataCount) );
+        }
+      }
+
+      return list;
+    };
+
+    return _this;
+  }();
+
+  //---------------------------------------------------------------------
+  // qrBitBuffer
+  //---------------------------------------------------------------------
+
+  var qrBitBuffer = function() {
+
+    var _buffer = [];
+    var _length = 0;
+
+    var _this = {};
+
+    _this.getBuffer = function() {
+      return _buffer;
+    };
+
+    _this.getAt = function(index) {
+      var bufIndex = Math.floor(index / 8);
+      return ( (_buffer[bufIndex] >>> (7 - index % 8) ) & 1) == 1;
+    };
+
+    _this.put = function(num, length) {
+      for (var i = 0; i < length; i += 1) {
+        _this.putBit( ( (num >>> (length - i - 1) ) & 1) == 1);
+      }
+    };
+
+    _this.getLengthInBits = function() {
+      return _length;
+    };
+
+    _this.putBit = function(bit) {
+
+      var bufIndex = Math.floor(_length / 8);
+      if (_buffer.length <= bufIndex) {
+        _buffer.push(0);
+      }
+
+      if (bit) {
+        _buffer[bufIndex] |= (0x80 >>> (_length % 8) );
+      }
+
+      _length += 1;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrNumber
+  //---------------------------------------------------------------------
+
+  var qrNumber = function(data) {
+
+    var _mode = QRMode.MODE_NUMBER;
+    var _data = data;
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return _data.length;
+    };
+
+    _this.write = function(buffer) {
+
+      var data = _data;
+
+      var i = 0;
+
+      while (i + 2 < data.length) {
+        buffer.put(strToNum(data.substring(i, i + 3) ), 10);
+        i += 3;
+      }
+
+      if (i < data.length) {
+        if (data.length - i == 1) {
+          buffer.put(strToNum(data.substring(i, i + 1) ), 4);
+        } else if (data.length - i == 2) {
+          buffer.put(strToNum(data.substring(i, i + 2) ), 7);
+        }
+      }
+    };
+
+    var strToNum = function(s) {
+      var num = 0;
+      for (var i = 0; i < s.length; i += 1) {
+        num = num * 10 + chatToNum(s.charAt(i) );
+      }
+      return num;
+    };
+
+    var chatToNum = function(c) {
+      if ('0' <= c && c <= '9') {
+        return c.charCodeAt(0) - '0'.charCodeAt(0);
+      }
+      throw 'illegal char :' + c;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrAlphaNum
+  //---------------------------------------------------------------------
+
+  var qrAlphaNum = function(data) {
+
+    var _mode = QRMode.MODE_ALPHA_NUM;
+    var _data = data;
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return _data.length;
+    };
+
+    _this.write = function(buffer) {
+
+      var s = _data;
+
+      var i = 0;
+
+      while (i + 1 < s.length) {
+        buffer.put(
+          getCode(s.charAt(i) ) * 45 +
+          getCode(s.charAt(i + 1) ), 11);
+        i += 2;
+      }
+
+      if (i < s.length) {
+        buffer.put(getCode(s.charAt(i) ), 6);
+      }
+    };
+
+    var getCode = function(c) {
+
+      if ('0' <= c && c <= '9') {
+        return c.charCodeAt(0) - '0'.charCodeAt(0);
+      } else if ('A' <= c && c <= 'Z') {
+        return c.charCodeAt(0) - 'A'.charCodeAt(0) + 10;
+      } else {
+        switch (c) {
+        case ' ' : return 36;
+        case '$' : return 37;
+        case '%' : return 38;
+        case '*' : return 39;
+        case '+' : return 40;
+        case '-' : return 41;
+        case '.' : return 42;
+        case '/' : return 43;
+        case ':' : return 44;
+        default :
+          throw 'illegal char :' + c;
+        }
+      }
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qr8BitByte
+  //---------------------------------------------------------------------
+
+  var qr8BitByte = function(data) {
+
+    var _mode = QRMode.MODE_8BIT_BYTE;
+    var _data = data;
+    var _bytes = qrcode.stringToBytes(data);
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return _bytes.length;
+    };
+
+    _this.write = function(buffer) {
+      for (var i = 0; i < _bytes.length; i += 1) {
+        buffer.put(_bytes[i], 8);
+      }
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrKanji
+  //---------------------------------------------------------------------
+
+  var qrKanji = function(data) {
+
+    var _mode = QRMode.MODE_KANJI;
+    var _data = data;
+
+    var stringToBytes = qrcode.stringToBytesFuncs['SJIS'];
+    if (!stringToBytes) {
+      throw 'sjis not supported.';
+    }
+    !function(c, code) {
+      // self test for sjis support.
+      var test = stringToBytes(c);
+      if (test.length != 2 || ( (test[0] << 8) | test[1]) != code) {
+        throw 'sjis not supported.';
+      }
+    }('\u53cb', 0x9746);
+
+    var _bytes = stringToBytes(data);
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return ~~(_bytes.length / 2);
+    };
+
+    _this.write = function(buffer) {
+
+      var data = _bytes;
+
+      var i = 0;
+
+      while (i + 1 < data.length) {
+
+        var c = ( (0xff & data[i]) << 8) | (0xff & data[i + 1]);
+
+        if (0x8140 <= c && c <= 0x9FFC) {
+          c -= 0x8140;
+        } else if (0xE040 <= c && c <= 0xEBBF) {
+          c -= 0xC140;
+        } else {
+          throw 'illegal char at ' + (i + 1) + '/' + c;
+        }
+
+        c = ( (c >>> 8) & 0xff) * 0xC0 + (c & 0xff);
+
+        buffer.put(c, 13);
+
+        i += 2;
+      }
+
+      if (i < data.length) {
+        throw 'illegal char at ' + (i + 1);
+      }
+    };
+
+    return _this;
+  };
+
+  //=====================================================================
+  // GIF Support etc.
+  //
+
+  //---------------------------------------------------------------------
+  // byteArrayOutputStream
+  //---------------------------------------------------------------------
+
+  var byteArrayOutputStream = function() {
+
+    var _bytes = [];
+
+    var _this = {};
+
+    _this.writeByte = function(b) {
+      _bytes.push(b & 0xff);
+    };
+
+    _this.writeShort = function(i) {
+      _this.writeByte(i);
+      _this.writeByte(i >>> 8);
+    };
+
+    _this.writeBytes = function(b, off, len) {
+      off = off || 0;
+      len = len || b.length;
+      for (var i = 0; i < len; i += 1) {
+        _this.writeByte(b[i + off]);
+      }
+    };
+
+    _this.writeString = function(s) {
+      for (var i = 0; i < s.length; i += 1) {
+        _this.writeByte(s.charCodeAt(i) );
+      }
+    };
+
+    _this.toByteArray = function() {
+      return _bytes;
+    };
+
+    _this.toString = function() {
+      var s = '';
+      s += '[';
+      for (var i = 0; i < _bytes.length; i += 1) {
+        if (i > 0) {
+          s += ',';
+        }
+        s += _bytes[i];
+      }
+      s += ']';
+      return s;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // base64EncodeOutputStream
+  //---------------------------------------------------------------------
+
+  var base64EncodeOutputStream = function() {
+
+    var _buffer = 0;
+    var _buflen = 0;
+    var _length = 0;
+    var _base64 = '';
+
+    var _this = {};
+
+    var writeEncoded = function(b) {
+      _base64 += String.fromCharCode(encode(b & 0x3f) );
+    };
+
+    var encode = function(n) {
+      if (n < 0) {
+        // error.
+      } else if (n < 26) {
+        return 0x41 + n;
+      } else if (n < 52) {
+        return 0x61 + (n - 26);
+      } else if (n < 62) {
+        return 0x30 + (n - 52);
+      } else if (n == 62) {
+        return 0x2b;
+      } else if (n == 63) {
+        return 0x2f;
+      }
+      throw 'n:' + n;
+    };
+
+    _this.writeByte = function(n) {
+
+      _buffer = (_buffer << 8) | (n & 0xff);
+      _buflen += 8;
+      _length += 1;
+
+      while (_buflen >= 6) {
+        writeEncoded(_buffer >>> (_buflen - 6) );
+        _buflen -= 6;
+      }
+    };
+
+    _this.flush = function() {
+
+      if (_buflen > 0) {
+        writeEncoded(_buffer << (6 - _buflen) );
+        _buffer = 0;
+        _buflen = 0;
+      }
+
+      if (_length % 3 != 0) {
+        // padding
+        var padlen = 3 - _length % 3;
+        for (var i = 0; i < padlen; i += 1) {
+          _base64 += '=';
+        }
+      }
+    };
+
+    _this.toString = function() {
+      return _base64;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // base64DecodeInputStream
+  //---------------------------------------------------------------------
+
+  var base64DecodeInputStream = function(str) {
+
+    var _str = str;
+    var _pos = 0;
+    var _buffer = 0;
+    var _buflen = 0;
+
+    var _this = {};
+
+    _this.read = function() {
+
+      while (_buflen < 8) {
+
+        if (_pos >= _str.length) {
+          if (_buflen == 0) {
+            return -1;
+          }
+          throw 'unexpected end of file./' + _buflen;
+        }
+
+        var c = _str.charAt(_pos);
+        _pos += 1;
+
+        if (c == '=') {
+          _buflen = 0;
+          return -1;
+        } else if (c.match(/^\s$/) ) {
+          // ignore if whitespace.
+          continue;
+        }
+
+        _buffer = (_buffer << 6) | decode(c.charCodeAt(0) );
+        _buflen += 6;
+      }
+
+      var n = (_buffer >>> (_buflen - 8) ) & 0xff;
+      _buflen -= 8;
+      return n;
+    };
+
+    var decode = function(c) {
+      if (0x41 <= c && c <= 0x5a) {
+        return c - 0x41;
+      } else if (0x61 <= c && c <= 0x7a) {
+        return c - 0x61 + 26;
+      } else if (0x30 <= c && c <= 0x39) {
+        return c - 0x30 + 52;
+      } else if (c == 0x2b) {
+        return 62;
+      } else if (c == 0x2f) {
+        return 63;
+      } else {
+        throw 'c:' + c;
+      }
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // gifImage (B/W)
+  //---------------------------------------------------------------------
+
+  var gifImage = function(width, height) {
+
+    var _width = width;
+    var _height = height;
+    var _data = new Array(width * height);
+
+    var _this = {};
+
+    _this.setPixel = function(x, y, pixel) {
+      _data[y * _width + x] = pixel;
+    };
+
+    _this.write = function(out) {
+
+      //---------------------------------
+      // GIF Signature
+
+      out.writeString('GIF87a');
+
+      //---------------------------------
+      // Screen Descriptor
+
+      out.writeShort(_width);
+      out.writeShort(_height);
+
+      out.writeByte(0x80); // 2bit
+      out.writeByte(0);
+      out.writeByte(0);
+
+      //---------------------------------
+      // Global Color Map
+
+      // black
+      out.writeByte(0x00);
+      out.writeByte(0x00);
+      out.writeByte(0x00);
+
+      // white
+      out.writeByte(0xff);
+      out.writeByte(0xff);
+      out.writeByte(0xff);
+
+      //---------------------------------
+      // Image Descriptor
+
+      out.writeString(',');
+      out.writeShort(0);
+      out.writeShort(0);
+      out.writeShort(_width);
+      out.writeShort(_height);
+      out.writeByte(0);
+
+      //---------------------------------
+      // Local Color Map
+
+      //---------------------------------
+      // Raster Data
+
+      var lzwMinCodeSize = 2;
+      var raster = getLZWRaster(lzwMinCodeSize);
+
+      out.writeByte(lzwMinCodeSize);
+
+      var offset = 0;
+
+      while (raster.length - offset > 255) {
+        out.writeByte(255);
+        out.writeBytes(raster, offset, 255);
+        offset += 255;
+      }
+
+      out.writeByte(raster.length - offset);
+      out.writeBytes(raster, offset, raster.length - offset);
+      out.writeByte(0x00);
+
+      //---------------------------------
+      // GIF Terminator
+      out.writeString(';');
+    };
+
+    var bitOutputStream = function(out) {
+
+      var _out = out;
+      var _bitLength = 0;
+      var _bitBuffer = 0;
+
+      var _this = {};
+
+      _this.write = function(data, length) {
+
+        if ( (data >>> length) != 0) {
+          throw 'length over';
+        }
+
+        while (_bitLength + length >= 8) {
+          _out.writeByte(0xff & ( (data << _bitLength) | _bitBuffer) );
+          length -= (8 - _bitLength);
+          data >>>= (8 - _bitLength);
+          _bitBuffer = 0;
+          _bitLength = 0;
+        }
+
+        _bitBuffer = (data << _bitLength) | _bitBuffer;
+        _bitLength = _bitLength + length;
+      };
+
+      _this.flush = function() {
+        if (_bitLength > 0) {
+          _out.writeByte(_bitBuffer);
+        }
+      };
+
+      return _this;
+    };
+
+    var getLZWRaster = function(lzwMinCodeSize) {
+
+      var clearCode = 1 << lzwMinCodeSize;
+      var endCode = (1 << lzwMinCodeSize) + 1;
+      var bitLength = lzwMinCodeSize + 1;
+
+      // Setup LZWTable
+      var table = lzwTable();
+
+      for (var i = 0; i < clearCode; i += 1) {
+        table.add(String.fromCharCode(i) );
+      }
+      table.add(String.fromCharCode(clearCode) );
+      table.add(String.fromCharCode(endCode) );
+
+      var byteOut = byteArrayOutputStream();
+      var bitOut = bitOutputStream(byteOut);
+
+      // clear code
+      bitOut.write(clearCode, bitLength);
+
+      var dataIndex = 0;
+
+      var s = String.fromCharCode(_data[dataIndex]);
+      dataIndex += 1;
+
+      while (dataIndex < _data.length) {
+
+        var c = String.fromCharCode(_data[dataIndex]);
+        dataIndex += 1;
+
+        if (table.contains(s + c) ) {
+
+          s = s + c;
+
+        } else {
+
+          bitOut.write(table.indexOf(s), bitLength);
+
+          if (table.size() < 0xfff) {
+
+            if (table.size() == (1 << bitLength) ) {
+              bitLength += 1;
+            }
+
+            table.add(s + c);
+          }
+
+          s = c;
+        }
+      }
+
+      bitOut.write(table.indexOf(s), bitLength);
+
+      // end code
+      bitOut.write(endCode, bitLength);
+
+      bitOut.flush();
+
+      return byteOut.toByteArray();
+    };
+
+    var lzwTable = function() {
+
+      var _map = {};
+      var _size = 0;
+
+      var _this = {};
+
+      _this.add = function(key) {
+        if (_this.contains(key) ) {
+          throw 'dup key:' + key;
+        }
+        _map[key] = _size;
+        _size += 1;
+      };
+
+      _this.size = function() {
+        return _size;
+      };
+
+      _this.indexOf = function(key) {
+        return _map[key];
+      };
+
+      _this.contains = function(key) {
+        return typeof _map[key] != 'undefined';
+      };
+
+      return _this;
+    };
+
+    return _this;
+  };
+
+  var createDataURL = function(width, height, getPixel) {
+    var gif = gifImage(width, height);
+    for (var y = 0; y < height; y += 1) {
+      for (var x = 0; x < width; x += 1) {
+        gif.setPixel(x, y, getPixel(x, y) );
+      }
+    }
+
+    var b = byteArrayOutputStream();
+    gif.write(b);
+
+    var base64 = base64EncodeOutputStream();
+    var bytes = b.toByteArray();
+    for (var i = 0; i < bytes.length; i += 1) {
+      base64.writeByte(bytes[i]);
+    }
+    base64.flush();
+
+    return 'data:image/gif;base64,' + base64;
+  };
+
+  //---------------------------------------------------------------------
+  // returns qrcode function.
+
+  return qrcode;
+}();
+
+// multibyte support
+!function() {
+
+  qrcode.stringToBytesFuncs['UTF-8'] = function(s) {
+    // http://stackoverflow.com/questions/18729405/how-to-convert-utf8-string-to-byte-array
+    function toUTF8Array(str) {
+      var utf8 = [];
+      for (var i=0; i < str.length; i++) {
+        var charcode = str.charCodeAt(i);
+        if (charcode < 0x80) utf8.push(charcode);
+        else if (charcode < 0x800) {
+          utf8.push(0xc0 | (charcode >> 6),
+              0x80 | (charcode & 0x3f));
+        }
+        else if (charcode < 0xd800 || charcode >= 0xe000) {
+          utf8.push(0xe0 | (charcode >> 12),
+              0x80 | ((charcode>>6) & 0x3f),
+              0x80 | (charcode & 0x3f));
+        }
+        // surrogate pair
+        else {
+          i++;
+          // UTF-16 encodes 0x10000-0x10FFFF by
+          // subtracting 0x10000 and splitting the
+          // 20 bits of 0x0-0xFFFFF into two halves
+          charcode = 0x10000 + (((charcode & 0x3ff)<<10)
+            | (str.charCodeAt(i) & 0x3ff));
+          utf8.push(0xf0 | (charcode >>18),
+              0x80 | ((charcode>>12) & 0x3f),
+              0x80 | ((charcode>>6) & 0x3f),
+              0x80 | (charcode & 0x3f));
+        }
+      }
+      return utf8;
+    }
+    return toUTF8Array(s);
+  };
+
+}();
+
+(function (factory) {
+  if (typeof define === 'function' && define.amd) {
+      define([], factory);
+  } else if (typeof exports === 'object') {
+      module.exports = factory();
+  }
+}(function () {
+    return qrcode;
+}));
+//---------------------------------------------------------------------
+//
+// QR Code Generator for JavaScript UTF8 Support (optional)
+//
+// Copyright (c) 2011 Kazuhiko Arase
+//
+// URL: http://www.d-project.com/
+//
+// Licensed under the MIT license:
+//  http://www.opensource.org/licenses/mit-license.php
+//
+// The word 'QR Code' is registered trademark of
+// DENSO WAVE INCORPORATED
+//  http://www.denso-wave.com/qrcode/faqpatent-e.html
+//
+//---------------------------------------------------------------------
+
+!function(qrcode) {
+
+  //---------------------------------------------------------------------
+  // overwrite qrcode.stringToBytes
+  //---------------------------------------------------------------------
+
+  qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
+
+}(qrcode);
+
+</script>
+
+<script>
+(function(){
+  "use strict";
+  var $=function(id){return document.getElementById(id);};
+  var esc=function(s){return (s==null?"":String(s)).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});};
+  var STORE="mimamoriQR.v1";
+
+  /* ---------- themes ---------- */
+  var THEMES=[
+    {k:"",      c:"#0e7c86"},
+    {k:"navy",  c:"#26476e"},
+    {k:"green", c:"#2f7d4f"},
+    {k:"coral", c:"#c9463c"},
+    {k:"rose",  c:"#b0446a"},
+    {k:"purple",c:"#6a4a8f"}
+  ];
+  var state={theme:""};
+  var sw=$("swatches");
+  THEMES.forEach(function(t){
+    var b=document.createElement("div");
+    b.className="sw"; b.style.background=t.c; b.title=t.k||"ティール";
+    b.onclick=function(){ setTheme(t.k); };
+    b.dataset.k=t.k; sw.appendChild(b);
+  });
+  function setTheme(k){
+    state.theme=k;
+    if(k) document.documentElement.setAttribute("data-theme",k);
+    else document.documentElement.removeAttribute("data-theme");
+    Array.prototype.forEach.call(sw.children,function(el){ el.classList.toggle("active", el.dataset.k===k); });
+    render();
+  }
+
+  /* ---------- QR field options ---------- */
+  var QR_FIELDS=[
+    {k:"name",   label:"氏名"},
+    {k:"furi",   label:"ふりがな"},
+    {k:"birth",  label:"生年月日"},
+    {k:"blood",  label:"血液型"},
+    {k:"allergy",label:"アレルギー"},
+    {k:"cond",   label:"持病・服薬"},
+    {k:"addr",   label:"住所"},
+    {k:"msg",    label:"メッセージ"},
+    {k:"contacts",label:"緊急連絡先"}
+  ];
+  var qrChecksWrap=$("qrChecks");
+  QR_FIELDS.forEach(function(f){
+    var on = (f.k==="name"||f.k==="blood"||f.k==="allergy"||f.k==="cond"||f.k==="contacts");
+    var lab=document.createElement("label"); lab.className="chk";
+    lab.innerHTML='<input type="checkbox" data-qr="'+f.k+'"'+(on?" checked":"")+'> '+esc(f.label);
+    qrChecksWrap.appendChild(lab);
+  });
+
+  /* ---------- contacts ---------- */
+  var contactsWrap=$("contacts");
+  function makeContact(rel,name,tel){
+    var div=document.createElement("div"); div.className="crow";
+    div.innerHTML=
+      '<div class="c-rel"><label>続柄</label><input type="text" class="c-rel-i" placeholder="例：母"></div>'+
+      '<div class="c-name"><label>お名前</label><input type="text" class="c-name-i" placeholder="例：山田 太郎"></div>'+
+      '<div class="c-tel"><label>電話番号</label><input type="tel" class="c-tel-i" placeholder="例：090-1234-5678"></div>'+
+      '<button type="button" class="del" title="削除">×</button>';
+    div.querySelector(".c-rel-i").value=rel||"";
+    div.querySelector(".c-name-i").value=name||"";
+    div.querySelector(".c-tel-i").value=tel||"";
+    div.querySelector(".del").onclick=function(){ div.remove(); render(); save(); };
+    div.addEventListener("input",function(){ render(); save(); });
+    contactsWrap.appendChild(div);
+  }
+  $("addContact").onclick=function(){ makeContact(); render(); save(); };
+
+  function getContacts(){
+    var out=[];
+    Array.prototype.forEach.call(contactsWrap.querySelectorAll(".crow"),function(r){
+      var rel=r.querySelector(".c-rel-i").value.trim();
+      var nm=r.querySelector(".c-name-i").value.trim();
+      var tel=r.querySelector(".c-tel-i").value.trim();
+      if(rel||nm||tel) out.push({rel:rel,name:nm,tel:tel});
+    });
+    return out;
+  }
+
+  /* ---------- generic repeatable groups (sensitive) ---------- */
+  var GROUPS={
+    bank:{ wrap:"banks", fields:[
+      {k:"name",  label:"金融機関名",  ph:"例：〇〇銀行"},
+      {k:"branch",label:"支店名",      ph:"例：本店 / △△支店"},
+      {k:"type",  label:"種別",        ph:"例：普通"},
+      {k:"number",label:"口座番号",    ph:"例：1234567"},
+      {k:"holder",label:"名義",        ph:"例：ヤマダ ハナコ"}
+    ]},
+    school:{ wrap:"schools", fields:[
+      {k:"name",  label:"園・学校名",   ph:"例：〇〇保育園"},
+      {k:"child", label:"園児・児童名", ph:"例：山田 太郎"},
+      {k:"class", label:"学年・クラス", ph:"例：ひまわり組 / 3年2組"},
+      {k:"tel",   label:"電話番号",     ph:"例：078-000-0000"},
+      {k:"pickup",label:"引き渡し許可者",ph:"例：母・祖母"}
+    ]},
+    work:{ wrap:"works", fields:[
+      {k:"name", label:"勤務先名",  ph:"例：〇〇株式会社"},
+      {k:"who",  label:"本人・続柄",ph:"例：父"},
+      {k:"dept", label:"部署",      ph:"例：営業部"},
+      {k:"tel",  label:"電話番号",  ph:"例：06-0000-0000"},
+      {k:"note", label:"備考",      ph:"任意"}
+    ]}
+  };
+  function makeGroupRow(type, data){
+    var g=GROUPS[type]; data=data||{};
+    var card=document.createElement("div"); card.className="gcard";
+    var html="";
+    g.fields.forEach(function(f){
+      html+='<div style="margin-bottom:8px;"><label>'+esc(f.label)+'</label>'+
+            '<input type="text" data-k="'+f.k+'" placeholder="'+esc(f.ph)+'"></div>';
+    });
+    html+='<button type="button" class="del" title="削除">×</button>';
+    card.innerHTML=html;
+    g.fields.forEach(function(f){ card.querySelector('[data-k="'+f.k+'"]').value=data[f.k]||""; });
+    card.querySelector(".del").onclick=function(){ card.remove(); render(); save(); };
+    card.addEventListener("input",function(){ render(); save(); });
+    $(g.wrap).appendChild(card);
+  }
+  function getGroup(type){
+    var g=GROUPS[type], out=[];
+    Array.prototype.forEach.call($(g.wrap).querySelectorAll(".gcard"),function(card){
+      var row={}, any=false;
+      g.fields.forEach(function(f){ var v=card.querySelector('[data-k="'+f.k+'"]').value.trim(); row[f.k]=v; if(v) any=true; });
+      if(any) out.push(row);
+    });
+    return out;
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("[data-add]"),function(btn){
+    btn.onclick=function(){ makeGroupRow(btn.getAttribute("data-add")); render(); save(); };
+  });
+
+  /* ---------- utility QRs (安全・防災) ---------- */
+  var UTIL_QR={"manual": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAVAAAAFQAQMAAADTJrSaAAAABlBMVEX///8AAABVwtN+AAAACXBIWXMAAAsTAAALEwEAmpwYAAAC6ElEQVR42u2aMZKrQAxERREQcgQfZW6G4WYchSNMSECh7ZbG3jW2g001o+DXYj9+oBpJrR6LtGjRokWLFi3+GTdFHKPir2W/zUNOMq54OMs3FaAz/iE6KtBTJJHYpdv9mwrQRXUFeozbNGyd5tTr2pPzb2pBJeGzyU8IaMFLe22ojPz2ZLWMTJY29ANaaqvX7b7LhO7SZ0FyZ/lahtFQ76+r15ajCclCq/nSiqOhHuOqGV8B1RVAz/76ZdLGQzvvr5rZXXhCeusuMiiq5zVZQdGSLLQMvreP7BKHN5OjEnSwZAGdMGT8AQVzDtsdaZT4KD8TPxdA72WGoJOgYPoqUE+WH4+dDwh0Dc4QiC45GvqX5GESqyj8NQv7TDrsWC2H1IBaS7UiepSTqQz0Vzzk1+U0KIqPbRfJ3EfngcICGp3/w+Q5jI6yoRRB1SlbLJdTHhforOvJiomyUaCfJihNvHTawIXwVrZd6o34KCVlMjlhs2bIZdx0tqZKDahpCdPa2DAXCm3T2lSafX47WQFRyonEVslZCTpDW7BgOlMZKg29LCZMpbdUKS11KB0nVYBiqGxmY3I5VSYLuzoVqc3YdFSAngPPympVZgYFTSqFu2kqowJU3JOgugLK5iq2mCz28LqYxETNjuxzcXWX57iBTedXHuFRC9bI05tkvtAyaNNlqQC1Cx23aGjVyjM/mBzHRZYHRVEZOCswaOnQn9RZeHWg0uzetHbtqIjnted4saswbuha1vNUAzo9XZnJjVylumJ3Oa9+VmD0Zaza3QbV+nz1tYOimKyJ18C5XOhwSzGR9S5Kg6IPZ1/KagZfm9XD3wXUgd5+1woeHHMr2Cpt+fp0GRgPfd7lUnUTtfWciqv75GkGRB8/DLH8cNHyprn45W9DP6FqJl6xdjzJnDBHPeivQuUzbjnw3qcdJiDqtUWPYvFdRM3LpcV7NYCDosXWBwO7qtxtCH8isr3dnMZEW7Ro0aJFi5rjB4LVcrvDgoWYAAAAAElFTkSuQmCC", "sos": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAVAAAAFQAQMAAADTJrSaAAAABlBMVEX///8AAABVwtN+AAAACXBIWXMAAAsTAAALEwEAmpwYAAACp0lEQVR42u2aMXKDQAxFxVC45AgchaMtR+MoHIGSglnlf2mxAdsTj9NlpSJx4JFCllb6EiJhYWFhYf/XeqWt/DA2+N3Nw5ilXbtZkt2aA32gE37gjuqUtKBNbnXppzTiVhfoEU2a21V6+DHvt5rtZiieDfRvKCyBMNfjK8B3Euh7FIGrG/yqynjls4E+oyW5cQk5rQv+1Cw3Jvu7c6Be1MtGNzP4tttqZaNk7OsKUzFaDO4b4EZmLINQiL7pSypH4T0QE4ORwSeNORR+xbNLoKf+dWSCzlYL/HjDM0TFOpRAv0JZHaTdu2JL5uTZPoyJdSTQgyGn6U/xk4+NiFhy438o68gc6NGvSp3Vs1x4cidkNzWFquuuQI/dG8uFMnMRjJ2hm+kuyU96q24UQZjsNIMxYxcxcWrBmPK5wlSP9jzyN55u8Kd4UTDl6TXhogsqR81akwMJp9n6kOfGSqBfoohXKnhKiB3lOInJLhcJEejAKxSngyU4klszT8ISr5eGpG6U4rSUDc0l2xtX8tQWgV7R7FNdzIhcnPJEXPr92UAPQWh+XYqYsqljY3UE9aQ5i6jq0b4ITFOctmSxVhcXcO5dv4JAdTQ3znd5juNNfa79dLwF+ilqIzc2JD3j1RoQ01sWyNfQDtTCElNd6i1X8j4j0hdjj8rRnlc4qDQlT0m/S4ch0FcoW131Had1JhaEe/GdA73OiEoQrr6285k4UT1NywO9L1c4fLTO5NDqvtlEVYruazubEW2PEa29alC2A4F+gT7vjlO2bJ944ZdFe3Vo8gOPYw9ICLmvQ+npTQJ99XIQ/Oj7ApyIzZ7U56440APKtxJ8I+X7AhbfJVC5ZqxtotQbk31tJ0lONTbQx4uikzVtnQUhZ7fYFJ93nIGGhYWFhYV9Zj8GXFbYmfQiVAAAAABJRU5ErkJggg==", "near": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAVAAAAFQAQMAAADTJrSaAAAABlBMVEX///8AAABVwtN+AAAACXBIWXMAAAsTAAALEwEAmpwYAAACbklEQVR42u2aMZKDMAxFxVCkzBFylD0aHC1HyREoKRhrpf8FAUN2to6lYpmsnxuNZH3JFklLS0tL+1rr1a345/Wj3XKbHjraR/U5YOmZ6Bud/a+h8/0lQ7eIPGx9kbuhvvJIdI/eVcdC/9oXi0Xg1051SvSMml/NoaPtsEW6N9GPqIWdBSH9asyc6CX6ztg43nzxprbxj+RuFI1aAGboDp8PZaNddBeM5kk1Rn5GZuxHtdEyisN/O/39U7igFplHvyaKg4xaDBXTS4JXBq0yNlERP9Ygwl5IYA/C0rOMwtmJ7msBXcdzzSqmoCSY9B8pYxM91AI79ZeeumIrnNPqdEn0WAPEM5Zi3xNXmbEei4nuUQYf/ComwlzsW89twtV+ObpP7kQh8iMYJZrtDuMKePkgMhL1OPPOKBI4pjkRi4cgTJTnWY+wE0gyTMImLwn8Z6L7481LJBy6ig1oftu4nPqBttGdX+0b8j7qZ52xif4f7VEgPEjfxVU3EVdpl9ZRgaiVnqo2HEpmqKRuohQkJbasHSdaq/FSuzSNCofUmPhowQ42UfBr3cknisHPNqUWtJpypV0SFTYCMyf7OP0dNS97LJ6CsGn0xkkPp2Qx2ohaoDofgrB5lNcgodNQQF/4aTdJXj/vmmgVhLgGQQHlzJrTWNV1DJRo9ZQkpmTrowDE4lK1562jccEWugKp6vOfmSON+eI2smWUV7dbMKJU8gWFJHpC989NYqeszfptSvT6BQW+CMLCQePp1Vei4VfUyBJdpdvpujvRNWM5eI1HAXzPdH430DwatYCjRe4cqMWGWr01j6alpaWlpX2h/QK779MIpPwRaAAAAABJRU5ErkJggg=="};
+  var UTIL=[
+    {k:"manual", label:"緊急対応マニュアル", sub:"災害・事故・防犯"},
+    {k:"sos",    label:"SOS救助・防犯ブザー", sub:"救助要請／ブザー"},
+    {k:"near",   label:"近くを探す",           sub:"病院・警察・消防・避難所"}
+  ];
+  var utilState={ manual:true, sos:true, near:true };
+  var utilChecksWrap=$("utilChecks");
+  UTIL.forEach(function(u){
+    var row=document.createElement("label"); row.className="uqrow";
+    row.innerHTML='<img src="'+UTIL_QR[u.k]+'" alt="">'+
+      '<div class="uqt"><b>'+esc(u.label)+'</b><span>'+esc(u.sub)+'</span></div>'+
+      '<input type="checkbox" data-util="'+u.k+'" checked>';
+    utilChecksWrap.appendChild(row);
+  });
+  utilChecksWrap.addEventListener("change",function(){ render(); save(); });
+  function readUtil(){
+    Array.prototype.forEach.call(utilChecksWrap.querySelectorAll("input[data-util]"),function(i){ utilState[i.dataset.util]=i.checked; });
+    return utilState;
+  }
+  function renderUtil(){
+    readUtil();
+    // remove previously injected utility cells (keep the personal QR cell)
+    Array.prototype.forEach.call($("cQrGroup").querySelectorAll(".qg[data-util]"),function(el){ el.remove(); });
+    UTIL.forEach(function(u){
+      if(!utilState[u.k]) return;
+      var cell=document.createElement("div");
+      cell.className="qg"; cell.setAttribute("data-util",u.k);
+      cell.innerHTML='<div class="qbox"><img src="'+UTIL_QR[u.k]+'" alt=""></div>'+
+                     '<div class="qg-l">'+esc(u.label)+'</div><div class="qg-s">'+esc(u.sub)+'</div>';
+      $("cQrGroup").appendChild(cell);
+    });
+  }
+
+  /* ---------- photo ---------- */
+  var photoData="";
+  $("photoPick").onclick=function(){ $("fPhoto").click(); };
+  $("fPhoto").onchange=function(e){
+    var file=e.target.files&&e.target.files[0]; if(!file) return;
+    var r=new FileReader();
+    r.onload=function(){ shrinkPhoto(r.result, function(d){ photoData=d; render(); save(); }); };
+    r.readAsDataURL(file);
+  };
+  $("photoClear").onclick=function(){ photoData=""; $("fPhoto").value=""; render(); save(); };
+  // resize/crop to a square ~360px to keep storage small
+  function shrinkPhoto(dataUrl, cb){
+    var img=new Image();
+    img.onload=function(){
+      var S=360, c=document.createElement("canvas"); c.width=S; c.height=S;
+      var ctx=c.getContext("2d");
+      var side=Math.min(img.width,img.height);
+      var sx=(img.width-side)/2, sy=(img.height-side)/2;
+      ctx.drawImage(img,sx,sy,side,side,0,0,S,S);
+      try{ cb(c.toDataURL("image/jpeg",0.85)); }catch(e){ cb(dataUrl); }
+    };
+    img.onerror=function(){ cb(dataUrl); };
+    img.src=dataUrl;
+  }
+
+  /* ---------- build the info + QR ---------- */
+  function chosenQrKeys(){
+    var keys={};
+    Array.prototype.forEach.call(qrChecksWrap.querySelectorAll("input[data-qr]"),function(i){ keys[i.dataset.qr]=i.checked; });
+    return keys;
+  }
+
+  function buildQrText(){
+    var k=chosenQrKeys(), lines=[], v=vals();
+    var type=$("fQrType").value;
+    if(type==="vcard"){
+      var L=["BEGIN:VCARD","VERSION:3.0"];
+      if(k.name && v.name) L.push("FN:"+v.name);
+      if(k.name && v.name){ L.push("N:"+v.name+";;;;"); }
+      var notes=[];
+      if(k.birth && v.birth) notes.push("生年月日:"+v.birth);
+      if(k.blood && v.blood) notes.push("血液型:"+v.blood);
+      if(k.allergy && v.allergy) notes.push("アレルギー:"+v.allergy);
+      if(k.cond && v.cond) notes.push("持病・服薬:"+v.cond);
+      if(k.msg && v.msg) notes.push(v.msg);
+      if(k.addr && v.addr) L.push("ADR:;;"+v.addr+";;;;");
+      if(k.contacts){ getContacts().forEach(function(c){ if(c.tel) L.push("TEL;TYPE=cell:"+c.tel); }); }
+      if(notes.length) L.push("NOTE:"+notes.join(" / "));
+      L.push("END:VCARD");
+      return L.join("\n");
+    }
+    // plain text
+    lines.push("【"+(v.title||"みまもりカード")+"】");
+    if(k.name && v.name) lines.push("氏名: "+v.name+(k.furi&&v.furi?" ("+v.furi+")":""));
+    else if(k.furi && v.furi) lines.push("ふりがな: "+v.furi);
+    if(k.birth && v.birth) lines.push("生年月日: "+v.birth);
+    if(k.blood && v.blood) lines.push("血液型: "+v.blood);
+    if(k.allergy && v.allergy) lines.push("アレルギー: "+v.allergy);
+    if(k.cond && v.cond) lines.push("持病・服薬: "+v.cond);
+    if(k.addr && v.addr) lines.push("住所: "+v.addr);
+    if(k.msg && v.msg) lines.push("メッセージ: "+v.msg);
+    if(k.contacts){
+      var cs=getContacts();
+      if(cs.length){ lines.push("― 緊急連絡先 ―"); cs.forEach(function(c){ lines.push((c.rel?"["+c.rel+"] ":"")+(c.name?c.name+" ":"")+(c.tel||"")); }); }
+    }
+    return lines.join("\n");
+  }
+
+  function drawQr(text){
+    var box=$("cQr"); box.innerHTML="";
+    if(!text){ box.innerHTML='<div style="font-size:11px;color:#b0bac1;text-align:center;padding-top:44px;">QRに入れる<br>項目がありません</div>'; return; }
+    var levels=["M","L"], made=null;
+    for(var li=0; li<levels.length && !made; li++){
+      try{
+        var qr=qrcode(0, levels[li]);
+        qr.addData(text);
+        qr.make();
+        made=qr;
+      }catch(e){ made=null; }
+    }
+    if(!made){
+      box.innerHTML='<div style="font-size:11px;color:#c9463c;text-align:center;padding-top:36px;">情報が多すぎます。<br>QR項目を減らしてください</div>';
+      return;
+    }
+    box.innerHTML=made.createSvgTag({cellSize:4, margin:0, scalable:true});
+  }
+
+  /* ---------- values ---------- */
+  function vals(){
+    return {
+      title:$("fTitle").value.trim(),
+      name:$("fName").value.trim(),
+      furi:$("fFuri").value.trim(),
+      birth:$("fBirth").value.trim(),
+      blood:$("fBlood").value,
+      gender:$("fGender").value.trim(),
+      addr:$("fAddr").value.trim(),
+      allergy:$("fAllergy").value.trim(),
+      cond:$("fCond").value.trim(),
+      msg:$("fMsg").value.trim(),
+      mynum:$("fMynum").value.trim(),
+      mynumStore:$("fMynumStore").value.trim(),
+      licNo:$("fLicNo").value.trim(),
+      licExp:$("fLicExp").value.trim(),
+      licType:$("fLicType").value.trim(),
+      licStore:$("fLicStore").value.trim()
+    };
+  }
+
+  /* ---------- render card ---------- */
+  function render(){
+    var v=vals();
+    $("cTitle").textContent=v.title||"みまもりカード";
+
+    // photo
+    var showPhoto=$("fShowPhoto").checked;
+    var cp=$("cPhoto"), pp=$("photoPrev");
+    if(photoData && showPhoto){ cp.innerHTML='<img src="'+photoData+'" alt="">'; cp.style.display="flex"; }
+    else if(!showPhoto){ cp.style.display="none"; }
+    else { cp.style.display="flex"; cp.innerHTML="写真"; }
+    pp.innerHTML = photoData ? '<img src="'+photoData+'" alt="">' : "写真<br>なし";
+
+    $("cName").textContent=v.name||"お名前";
+    var f=$("cFuri"); f.textContent=v.furi||""; f.style.display=v.furi?"block":"none";
+
+    // meta line (birth / gender / address)
+    var meta=[];
+    if(v.birth) meta.push('<span><b>生年月日</b>'+esc(v.birth)+'</span>');
+    if(v.gender) meta.push('<span><b>性別など</b>'+esc(v.gender)+'</span>');
+    if(v.addr) meta.push('<span><b>住所</b>'+esc(v.addr)+'</span>');
+    $("cMeta").innerHTML=meta.join("");
+
+    // message
+    var m=$("cMsg");
+    if(v.msg){ m.style.display="block"; m.textContent=v.msg; } else m.style.display="none";
+
+    // medical
+    var med=[];
+    if(v.blood) med.push('<div class="mrow"><span class="mk">血液型</span><span class="mv">'+esc(v.blood)+'</span></div>');
+    if(v.allergy) med.push('<div class="mrow"><span class="mk">アレルギー</span><span class="mv">'+esc(v.allergy)+'</span></div>');
+    if(v.cond) med.push('<div class="mrow"><span class="mk">持病・服薬</span><span class="mv">'+esc(v.cond)+'</span></div>');
+    $("cMed").innerHTML=med.join("");
+    $("cMedSec").style.display=med.length?"block":"none";
+
+    // contacts
+    var cs=getContacts(), ce=$("cContacts");
+    if(cs.length){
+      ce.innerHTML=cs.map(function(c){
+        return '<li><span class="cl-rel">'+esc(c.rel||"連絡先")+'</span>'+
+               '<span class="cl-name">'+esc(c.name||"")+'</span>'+
+               '<span class="cl-tel">'+esc(c.tel||"")+'</span></li>';
+      }).join("");
+    } else ce.innerHTML='<li class="empty">連絡先を入力してください</li>';
+
+    // hotlines toggle
+    $("cHotSec").style.display=$("fShowHot").checked?"block":"none";
+    $("cSupportSec").style.display=$("fShowSupport").checked?"block":"none";
+
+    // utility QRs
+    renderUtil();
+
+    // stamp + card2 header
+    var d=new Date();
+    var stamp="作成日 "+d.getFullYear()+"/"+(d.getMonth()+1)+"/"+d.getDate();
+    $("cStamp").textContent=stamp; $("cStamp2").textContent=stamp;
+    $("cTitle2").textContent=(v.title? v.title+"（連絡先・重要情報）":"連絡先・重要情報");
+    $("cName2").textContent=(v.name||"お名前");
+
+    // private / sensitive block
+    renderPrivate(v);
+
+    // qr
+    drawQr(buildQrText());
+  }
+
+  function kv(label,val){ return '<div class="kv"><b>'+esc(label)+'</b>'+esc(val)+'</div>'; }
+  function renderPrivate(v){
+    var any=false;
+    // banks
+    var banks=getGroup("bank");
+    if(banks.length){ any=true;
+      $("cBanks").innerHTML=banks.map(function(b){
+        var parts=[];
+        if(b.name) parts.push(b.name);
+        if(b.branch) parts.push(b.branch);
+        if(b.type) parts.push(b.type);
+        var line='<div class="kv"><b>'+esc(parts.join(" ")||"口座")+'</b>'+esc(b.number||"")+'</div>';
+        if(b.holder) line+='<div class="kv"><b>名義</b>'+esc(b.holder)+'</div>';
+        return line;
+      }).join("");
+      $("cBankSec").style.display="block";
+    } else $("cBankSec").style.display="none";
+    // my number
+    var mn=[];
+    if(v.mynum) mn.push(kv("番号",v.mynum));
+    if(v.mynumStore) mn.push(kv("保管場所",v.mynumStore));
+    $("cMynum").innerHTML=mn.join(""); $("cMynumSec").style.display=mn.length?"block":"none"; if(mn.length) any=true;
+    // license
+    var lc=[];
+    if(v.licNo) lc.push(kv("番号",v.licNo));
+    if(v.licType) lc.push(kv("種類",v.licType));
+    if(v.licExp) lc.push(kv("有効期限",v.licExp));
+    if(v.licStore) lc.push(kv("保管場所",v.licStore));
+    $("cLic").innerHTML=lc.join(""); $("cLicSec").style.display=lc.length?"block":"none"; if(lc.length) any=true;
+    // schools
+    var schools=getGroup("school");
+    if(schools.length){ any=true;
+      $("cSchools").innerHTML=schools.map(function(s){
+        var l="";
+        l+='<div class="kv"><b>'+esc(s.name||"園・学校")+'</b>'+esc([s.child,s.class].filter(Boolean).join(" / "))+'</div>';
+        if(s.tel) l+=kv("電話",s.tel);
+        if(s.pickup) l+=kv("引き渡し許可",s.pickup);
+        return l;
+      }).join("");
+      $("cSchoolSec").style.display="block";
+    } else $("cSchoolSec").style.display="none";
+    // works
+    var works=getGroup("work");
+    if(works.length){ any=true;
+      $("cWorks").innerHTML=works.map(function(w){
+        var head=[w.name,w.who?"("+w.who+")":""].filter(Boolean).join(" ");
+        var l='<div class="kv"><b>'+esc(head||"勤務先")+'</b>'+esc([w.dept,w.tel].filter(Boolean).join(" / "))+'</div>';
+        if(w.note) l+=kv("備考",w.note);
+        return l;
+      }).join("");
+      $("cWorkSec").style.display="block";
+    } else $("cWorkSec").style.display="none";
+
+    $("cPrivEmpty").style.display=any?"none":"block";
+  }
+
+  /* ---------- save / load ---------- */
+  function collect(){
+    return {
+      theme:state.theme, photo:photoData,
+      showPhoto:$("fShowPhoto").checked, showHot:$("fShowHot").checked,
+      showSupport:$("fShowSupport").checked, util:readUtil(),
+      qrType:$("fQrType").value,
+      qrKeys:chosenQrKeys(),
+      v:vals(),
+      contacts:getContacts(),
+      banks:getGroup("bank"),
+      schools:getGroup("school"),
+      works:getGroup("work")
+    };
+  }
+  function save(){
+    try{ localStorage.setItem(STORE, JSON.stringify(collect())); }catch(e){}
+  }
+  function load(){
+    var raw; try{ raw=localStorage.getItem(STORE); }catch(e){ raw=null; }
+    if(!raw) return false;
+    var d; try{ d=JSON.parse(raw); }catch(e){ return false; }
+    try{
+      if(d.v){ var v=d.v;
+        $("fTitle").value=v.title||"みまもりカード";
+        $("fName").value=v.name||""; $("fFuri").value=v.furi||"";
+        $("fBirth").value=v.birth||""; $("fBlood").value=v.blood||"";
+        $("fGender").value=v.gender||""; $("fAddr").value=v.addr||"";
+        $("fAllergy").value=v.allergy||""; $("fCond").value=v.cond||""; $("fMsg").value=v.msg||"";
+        $("fMynum").value=v.mynum||""; $("fMynumStore").value=v.mynumStore||"";
+        $("fLicNo").value=v.licNo||""; $("fLicExp").value=v.licExp||""; $("fLicType").value=v.licType||""; $("fLicStore").value=v.licStore||"";
+      }
+      photoData=d.photo||"";
+      $("fShowPhoto").checked=d.showPhoto!==false;
+      $("fShowHot").checked=d.showHot!==false;
+      $("fShowSupport").checked=d.showSupport!==false;
+      if(d.util){ Array.prototype.forEach.call(utilChecksWrap.querySelectorAll("input[data-util]"),function(i){ if(d.util.hasOwnProperty(i.dataset.util)) i.checked=!!d.util[i.dataset.util]; }); }
+      if(d.qrType) $("fQrType").value=d.qrType;
+      if(d.qrKeys){ Array.prototype.forEach.call(qrChecksWrap.querySelectorAll("input[data-qr]"),function(i){ if(d.qrKeys.hasOwnProperty(i.dataset.qr)) i.checked=!!d.qrKeys[i.dataset.qr]; }); }
+      contactsWrap.innerHTML="";
+      (d.contacts&&d.contacts.length?d.contacts:[null]).forEach(function(c){ c?makeContact(c.rel,c.name,c.tel):makeContact(); });
+      $("banks").innerHTML=""; (d.banks||[]).forEach(function(b){ makeGroupRow("bank",b); });
+      $("schools").innerHTML=""; (d.schools||[]).forEach(function(s){ makeGroupRow("school",s); });
+      $("works").innerHTML=""; (d.works||[]).forEach(function(w){ makeGroupRow("work",w); });
+      setTheme(d.theme||"");
+      return true;
+    }catch(e){ return false; }
+  }
+
+  /* ---------- image export (card -> PNG) ---------- */
+  function cardToPngBlob(el){
+    return new Promise(function(resolve,reject){
+      try{
+        var card=el||$("sheet");
+        var rect=card.getBoundingClientRect();
+        var w=Math.ceil(rect.width), h=Math.ceil(card.scrollHeight), scale=2;
+        var css=""; var styles=document.querySelectorAll("style");
+        for(var i=0;i<styles.length;i++) css+=styles[i].textContent+"\n";
+        // resolve theme CSS variables to concrete values
+        var rootCS=getComputedStyle(document.documentElement);
+        var names=["--ink","--ink-soft","--line","--muted","--paper","--bg","--panel","--field","--brand","--brand-deep","--brand-soft","--accent","--accent-soft"];
+        var varCss=""; names.forEach(function(n){ var val=rootCS.getPropertyValue(n); if(val) varCss+=n+":"+val.trim()+";"; });
+        var clone=card.cloneNode(true);
+        clone.style.margin="0"; clone.style.boxShadow="none";
+        var holder="background:#fff;padding:0;margin:0;width:"+w+"px;"+varCss;
+        var xhtml=new XMLSerializer().serializeToString(clone);
+        var svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'">'+
+          '<foreignObject x="0" y="0" width="'+w+'" height="'+h+'">'+
+          '<div xmlns="http://www.w3.org/1999/xhtml" style="'+holder+'"><style>'+css+'</style>'+xhtml+'</div>'+
+          '</foreignObject></svg>';
+        var img=new Image();
+        var blob=new Blob([svg],{type:"image/svg+xml;charset=utf-8"});
+        var url=URL.createObjectURL(blob);
+        img.onload=function(){
+          try{
+            var c=document.createElement("canvas"); c.width=w*scale; c.height=h*scale;
+            var ctx=c.getContext("2d"); ctx.scale(scale,scale);
+            ctx.fillStyle="#ffffff"; ctx.fillRect(0,0,w,h);
+            ctx.drawImage(img,0,0);
+            URL.revokeObjectURL(url);
+            c.toBlob(function(b){ b?resolve(b):reject(new Error("toBlob failed")); },"image/png");
+          }catch(e){ URL.revokeObjectURL(url); reject(e); }
+        };
+        img.onerror=function(e){ URL.revokeObjectURL(url); reject(e); };
+        img.src=url;
+      }catch(e){ reject(e); }
+    });
+  }
+  function download(blob,name){
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement("a"); a.href=url; a.download=name;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); },4000);
+  }
+  function fileTitle(){ return ($("fName").value.trim()||$("fTitle").value.trim()||"みまもりカード"); }
+
+  /* ---------- buttons ---------- */
+  $("btnPrint").onclick=function(){ window.print(); };
+
+  $("btnImg").onclick=function(){
+    var b=$("btnImg"), o=b.textContent; b.disabled=true; b.textContent="作成中…";
+    var base=fileTitle();
+    cardToPngBlob($("card1"))
+      .then(function(blob){ download(blob, base+"_1_連絡先.png"); return cardToPngBlob($("card2")); })
+      .then(function(blob2){ download(blob2, base+"_2_重要情報.png"); toast("2枚のカード画像を保存しました"); })
+      .catch(function(){ toast("画像化に失敗しました。印刷をお試しください"); })
+      .then(function(){ b.disabled=false; b.textContent=o; });
+  };
+
+  function sizedQrSvg(){
+    var text=buildQrText(); if(!text) return "";
+    var levels=["M","L"], made=null;
+    for(var li=0; li<levels.length && !made; li++){ try{ var q=qrcode(0,levels[li]); q.addData(text); q.make(); made=q; }catch(e){ made=null; } }
+    if(!made) return "";
+    return made.createSvgTag(8, 4); // fixed cellSize + margin => svg has width/height
+  }
+  $("btnQr").onclick=function(){
+    var s=sizedQrSvg();
+    if(!s){ toast("QRがありません"); return; }
+    var img=new Image();
+    var blob=new Blob([s],{type:"image/svg+xml;charset=utf-8"});
+    var url=URL.createObjectURL(blob);
+    img.onload=function(){
+      var S=720, c=document.createElement("canvas"); c.width=S; c.height=S;
+      var ctx=c.getContext("2d"); ctx.fillStyle="#fff"; ctx.fillRect(0,0,S,S);
+      ctx.drawImage(img,24,24,S-48,S-48);
+      URL.revokeObjectURL(url);
+      c.toBlob(function(b){ if(b){ download(b, fileTitle()+"_QR.png"); toast("QR画像を保存しました"); } });
+    };
+    img.onerror=function(){ URL.revokeObjectURL(url); toast("QRの保存に失敗しました"); };
+    img.src=url;
+  };
+
+  $("btnCopy").onclick=function(){
+    var text=buildQrText();
+    var btn=$("btnCopy"), o=btn.textContent;
+    var done=function(){ btn.classList.add("copied"); btn.textContent="✓ コピーしました"; setTimeout(function(){ btn.classList.remove("copied"); btn.textContent=o; },1600); };
+    if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(done,function(){ fallbackCopy(text); done(); }); }
+    else { fallbackCopy(text); done(); }
+  };
+  function fallbackCopy(t){ var ta=document.createElement("textarea"); ta.value=t; ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta); ta.select(); try{document.execCommand("copy");}catch(e){} document.body.removeChild(ta); }
+
+  $("btnShare").onclick=function(){
+    var title=fileTitle(), text=buildQrText();
+    cardToPngBlob($("card1")).then(function(blob){
+      var file=new File([blob], title+".png",{type:"image/png"});
+      if(navigator.canShare&&navigator.canShare({files:[file]})&&navigator.share){
+        navigator.share({files:[file],title:title,text:text}).catch(function(){});
+      } else if(navigator.share){ navigator.share({title:title,text:text}).catch(function(){}); }
+      else { fallbackCopy(text); toast("共有非対応のため内容をコピーしました"); }
+    }).catch(function(){
+      if(navigator.share){ navigator.share({title:title,text:text}).catch(function(){}); }
+      else { fallbackCopy(text); toast("共有非対応のため内容をコピーしました"); }
+    });
+  };
+
+  function doReset(){
+    try{ localStorage.removeItem(STORE); }catch(e){}
+    $("form").reset();
+    photoData=""; contactsWrap.innerHTML="";
+    makeContact("母","",""); makeContact();
+    $("banks").innerHTML=""; $("schools").innerHTML=""; $("works").innerHTML="";
+    $("fTitle").value="みまもりカード"; $("fShowPhoto").checked=true; $("fShowHot").checked=true; $("fShowSupport").checked=true;
+    Array.prototype.forEach.call(utilChecksWrap.querySelectorAll("input[data-util]"),function(i){ i.checked=true; });
+    Array.prototype.forEach.call(qrChecksWrap.querySelectorAll("input[data-qr]"),function(i){
+      i.checked=(["name","blood","allergy","cond","contacts"].indexOf(i.dataset.qr)>=0);
+    });
+    setTheme(""); render(); toast("リセットしました");
+  }
+  window.__mimamoriWipe=function(){ doReset(); try{ localStorage.removeItem(STORE); }catch(e){} };
+  $("btnReset").onclick=function(){
+    if(!confirm("入力内容と写真をすべて消去します。よろしいですか？")) return;
+    doReset();
+  };
+  $("btnWipeM").onclick=function(){ if(window.__qrvaultOpenWipe) window.__qrvaultOpenWipe(); };
+
+  /* ---------- live updates ---------- */
+  $("form").addEventListener("input",function(){ render(); save(); });
+  $("form").addEventListener("change",function(){ render(); save(); });
+
+  var toastTimer;
+  function toast(msg){ var t=$("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toastTimer); toastTimer=setTimeout(function(){ t.classList.remove("show"); },2400); }
+
+  /* ---------- init ---------- */
+  if(!load()){
+    makeContact("母","山田 太郎","090-1234-5678");
+    makeContact();
+    setTheme("");
+  }
+  render();
+})();
+</script>
+
+<script>
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id);};
+var esc=function(s){return (s==null?"":String(s)).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});};
+var KEY_TRAY="qrvault.tray.v1";
+var HAS_CS=(typeof CompressionStream!=="undefined"&&typeof DecompressionStream!=="undefined");
+var HAS_SUBTLE=!!(window.crypto&&window.crypto.subtle);
+var HDR_LEN=30;
+
+/* ---------- 画面切り替え ---------- */
+var VIEWS={hero:"hero",vault:"viewVault",mimamori:"viewMimamori"};
+var curView="hero";
+function show(v){
+  curView=v;
+  Object.keys(VIEWS).forEach(function(k){ $(VIEWS[k]).hidden=(k!==v); });
+  document.body.classList.toggle("is-hero",v==="hero");
+  window.scrollTo(0,0);
+  try{ history.replaceState(null,"",v==="hero"?location.pathname+location.search:"#"+v); }catch(e){}
+}
+Array.prototype.forEach.call(document.querySelectorAll("[data-go]"),function(b){ b.addEventListener("click",function(){ show(b.getAttribute("data-go")); }); });
+(function(){ var h=(location.hash||"").replace("#",""); show(VIEWS[h]&&h!=="hero"?h:"hero"); })();
+
+var toastTimer;
+function toast(msg){ var t=$("toast"); if(!t) return; t.textContent=msg; t.classList.add("show"); clearTimeout(toastTimer); toastTimer=setTimeout(function(){ t.classList.remove("show"); },2600); }
+
+/* ---------- データ定義 ---------- */
+var CATS=[
+ {id:"contacts",ico:"📒",name:"電話帳",imp:false,fields:["名前","電話","メール","メモ"],
+  hint:"電話帳のvCard(.vcf)かCSVを選ぶか、貼り付けます。名前・電話・メール・会社・住所などを自動で振り分けます。"},
+ {id:"logins",ico:"🔑",name:"アプリ・サービスのID/パスワード",imp:true,fields:["サービス名","URL","ID","パスワード","補足"],
+  hint:"パスワード管理(Chrome／iCloudキーチェーン／1Password／Bitwarden等)から書き出したCSVを選べます。補足には、秘密の質問・2段階認証の方法などを書きます。"},
+ {id:"apps",ico:"📱",name:"アプリ一覧(URL)",imp:false,fields:["アプリ名","URL","メモ"],
+  hint:"1行1件で「アプリ名 URL」のように貼り付けます(例:LINE https://line.me/)。URLだけの行も取り込めます。"},
+ {id:"twofa",ico:"🛡",name:"2段階認証・リカバリーコード",imp:true,fields:["サービス名","コード・秘密鍵","補足"],
+  hint:"バックアップコード、認証アプリの秘密鍵(セットアップキー)、パスキー・リカバリーキーなど。これが漏れるとアカウントを奪われます。"},
+ {id:"device",ico:"📶",name:"端末・回線・Wi-Fi",imp:true,fields:["項目","内容","補足"],
+  hint:"端末の暗証番号、SIMのPIN、Wi-FiのSSIDとパスワード、ルーターの管理画面のID／パスワード、Apple ID／Googleアカウントの復旧情報など。"},
+ {id:"money",ico:"🏦",name:"金融・保険・契約",imp:true,fields:["項目","番号・内容","連絡先・補足"],
+  hint:"銀行・証券・保険・年金・携帯の契約番号と連絡先など。カード番号の全桁・暗証番号・暗号資産のシードフレーズは、必ず暗号化＋半分カットで。"},
+ {id:"notes",ico:"📝",name:"自由メモ(その他のテキスト)",imp:false,fields:["タイトル","本文"],
+  hint:"上のどれにも当てはまらない、文字にできるものは何でも。テキストファイル(.txt)を選ぶと、1件のメモとして入れられます。"}
+];
+var LONGF={"本文":1,"コード・秘密鍵":1,"補足":1,"メモ":1,"内容":1,"連絡先・補足":1,"番号・内容":1};
+var data={}; CATS.forEach(function(c){ data[c.id]=[]; });
+var catOf=function(id){ for(var i=0;i<CATS.length;i++) if(CATS[i].id===id) return CATS[i]; return null; };
+var curCat="contacts", page={}, PER=20;
+var tray=[];
+var restoreSets={};
+
+/* ---------- CSV / vCard 読み込み ---------- */
+function parseCSV(t,delim){
+  var rows=[],row=[],f="",q=false,i=0; t=t.replace(/^﻿/,"");
+  for(;i<t.length;i++){ var ch=t[i];
+    if(q){ if(ch==='"'){ if(t[i+1]==='"'){ f+='"'; i++; } else q=false; } else f+=ch; }
+    else if(ch==='"'&&f===""){ q=true; }
+    else if(ch===delim){ row.push(f); f=""; }
+    else if(ch==="\n"){ row.push(f); rows.push(row); row=[]; f=""; }
+    else if(ch==="\r"){ }
+    else f+=ch;
+  }
+  if(f!==""||row.length){ row.push(f); rows.push(row); }
+  return rows.filter(function(r){ return r.some(function(c){ return String(c).trim()!==""; }); });
+}
+function detectDelim(t){ var l=t.split("\n")[0]||""; var tabs=(l.match(/\t/g)||[]).length, com=(l.match(/,/g)||[]).length; return tabs>com?"\t":","; }
+function qpDecode(s){
+  return s.replace(/((?:=[0-9A-Fa-f]{2})+)/g,function(m){
+    var bytes=m.split("=").filter(Boolean).map(function(h){ return parseInt(h,16); });
+    try{ return new TextDecoder("utf-8").decode(new Uint8Array(bytes)); }catch(e){ return m; }
+  });
+}
+function vUnesc(s){ return s.replace(/\\n/gi," ").replace(/\\,/g,",").replace(/\\;/g,";").replace(/\\\\/g,"\\"); }
+function parseVcf(t){
+  t=t.replace(/\r\n?/g,"\n").replace(/=\n/g,"").replace(/\n[ \t]/g,"");
+  var out=[], cur=null;
+  t.split("\n").forEach(function(line){
+    if(/^BEGIN:VCARD/i.test(line)){ cur={fn:"",n:"",tel:[],mail:[],org:"",note:"",adr:[]}; return; }
+    if(/^END:VCARD/i.test(line)){ if(cur){ var nm=cur.fn||cur.n; out.push([nm,cur.tel.join(" / "),cur.mail.join(" / "),[cur.org,cur.adr.join(" / "),cur.note].filter(Boolean).join(" / ")]); } cur=null; return; }
+    if(!cur) return;
+    var i=line.indexOf(":"); if(i<0) return;
+    var head=line.slice(0,i), val=line.slice(i+1), parts=head.split(";"), name=parts[0].replace(/^.*\./,"").toUpperCase();
+    if(/QUOTED-PRINTABLE/i.test(head)) val=qpDecode(val);
+    val=vUnesc(val).trim(); if(!val) return;
+    if(name==="FN") cur.fn=val;
+    else if(name==="N"){ var p=val.split(";"); cur.n=(p[0]+" "+(p[1]||"")).trim(); }
+    else if(name==="TEL") cur.tel.push(val);
+    else if(name==="EMAIL") cur.mail.push(val);
+    else if(name==="ORG") cur.org=val.replace(/;/g," ");
+    else if(name==="NOTE") cur.note=val;
+    else if(name==="ADR") cur.adr.push(val.replace(/;/g," ").replace(/\s+/g," ").trim());
+  });
+  return out;
+}
+function idxOf(h,re,not){ for(var i=0;i<h.length;i++){ if(re.test(h[i])&&!(not&&not.test(h[i]))) return i; } return -1; }
+function mapRows(catId,rows){
+  var c=catOf(catId), n=c.fields.length, hdr=rows[0].map(function(x){ return String(x).trim().toLowerCase(); }), out=[];
+  if(catId==="logins"){
+    var iN=idxOf(hdr,/^(name|title|サービス|名前|タイトル|site)/), iU=idxOf(hdr,/(url|uri|website|サイト)/), iI=idxOf(hdr,/(user|login|account|e-?mail|ユーザ|アカウント|^id$)/,/url|uri/), iP=idxOf(hdr,/pass|パスワード/), iM=idxOf(hdr,/(note|memo|補足|メモ|extra)/), iO=idxOf(hdr,/otp|totp/);
+    if(iP>=0&&(iU>=0||iI>=0)){
+      rows.slice(1).forEach(function(r){ var note=[iM>=0?r[iM]:"",iO>=0&&r[iO]?("OTP:"+r[iO]):""].filter(Boolean).join(" / ");
+        out.push([iN>=0?r[iN]:"",iU>=0?r[iU]:"",iI>=0?r[iI]:"",r[iP]||"",note]); });
+      return out;
+    }
+  }
+  if(catId==="contacts"){
+    var nm=[],ph=[],ml=[],ot=[];
+    hdr.forEach(function(h,i){
+      if(/(^|\s)(first|middle|last|given|family|display)?\s*name|氏名|名前|^姓$|^名$|^姓名$|ふりがな|フリガナ/.test(h)&&!/(file|nick|user)/.test(h)&&!/(phone|e-?mail)/.test(h)) nm.push(i);
+      else if(/phone|tel|電話|携帯|mobile/.test(h)&&!/type|label|ラベル/.test(h)) ph.push(i);
+      else if(/e-?mail|メール/.test(h)&&!/type|label|ラベル/.test(h)) ml.push(i);
+      else if(/(organi[sz]ation|company|title|note|memo|address|会社|組織|メモ|住所|備考)/.test(h)&&!/type|label|ラベル/.test(h)) ot.push(i);
+    });
+    if(nm.length&&(ph.length||ml.length)){
+      var j=function(r,a){ return a.map(function(i){ return (r[i]||"").trim(); }).filter(Boolean).join(" "); };
+      var jj=function(r,a){ return a.map(function(i){ return (r[i]||"").trim(); }).filter(Boolean).join(" / "); };
+      rows.slice(1).forEach(function(r){ out.push([j(r,nm),jj(r,ph),jj(r,ml),jj(r,ot)]); });
+      return out;
+    }
+  }
+  var hasHdr=hdr.some(function(h){ return c.fields.some(function(f){ return h===f.toLowerCase(); }); });
+  (hasHdr?rows.slice(1):rows).forEach(function(r){
+    var row=r.slice(0,n); while(row.length<n) row.push("");
+    if(r.length>n) row[n-1]=(row[n-1]+" "+r.slice(n).join(" ")).trim();
+    out.push(row);
+  });
+  return out;
+}
+function importText(catId,text,fname){
+  var c=catOf(catId), added=0, rows;
+  text=String(text).replace(/^﻿/,"");
+  if(!text.trim()){ toast("取り込む内容がありません"); return; }
+  if(/BEGIN:VCARD/i.test(text)){ rows=parseVcf(text); }
+  else if(catId==="notes"){ rows=[[fname||"貼り付けメモ",text.trim()]]; }
+  else if(catId==="apps"&&!/,|\t/.test(text.split("\n")[0]||"")){
+    rows=text.split(/\r?\n/).map(function(l){ return l.trim(); }).filter(Boolean).map(function(l){
+      var m=l.match(/^(.*?)\s*(https?:\/\/\S+)\s*(.*)$/);
+      if(m) return [m[1].trim()||m[2].replace(/^https?:\/\//,"").split("/")[0],m[2],m[3]||""];
+      return [l,"",""];
+    });
+  } else {
+    var all=parseCSV(text,detectDelim(text)); if(!all.length){ toast("取り込めるデータがありません"); return; }
+    rows=mapRows(catId,all);
+  }
+  rows.forEach(function(r){ if(r.some(function(x){ return String(x||"").trim(); })){ data[catId].push(r.map(function(x){ return String(x==null?"":x); })); added++; } });
+  toast(c.name+":"+added+"件を取り込みました");
+  renderAll();
+}
+
+/* ---------- 入力UI ---------- */
+function dataCount(){ var n=0; CATS.forEach(function(c){ n+=nonEmpty(c.id).length; }); return n; }
+function nonEmpty(id){ return data[id].filter(function(r){ return r.some(function(x){ return String(x||"").trim()!==""; }); }); }
+function renderTabs(){
+  var h=""; CATS.forEach(function(c){
+    h+='<button type="button" class="tab'+(c.id===curCat?" on":"")+'" data-cat="'+c.id+'">'+c.ico+" "+esc(c.name)+'<span class="cnt">'+nonEmpty(c.id).length+'件</span>'+(c.imp?'<span class="imp">重要</span>':"")+'</button>';
+  });
+  $("vTabs").innerHTML=h;
+  Array.prototype.forEach.call($("vTabs").querySelectorAll(".tab"),function(b){ b.onclick=function(){ curCat=b.getAttribute("data-cat"); renderTabs(); renderPanel(); }; });
+}
+function renderPanel(){
+  var c=catOf(curCat), rows=data[c.id], pg=page[c.id]||0, pages=Math.max(1,Math.ceil(rows.length/PER));
+  if(pg>=pages) pg=pages-1; page[c.id]=pg;
+  var h='<p class="hint" style="margin:0 0 8px;">'+esc(c.hint)+'</p>';
+  if(c.imp) h+='<div class="alert">🔒 <b>重要な項目です。</b>QRの設定で「暗号化」と「半分カット」を使うことをおすすめします。</div>';
+  h+='<div class="btnrow"><input type="file" id="fileIn" accept=".vcf,.csv,.tsv,.txt,text/*" multiple style="display:none"><button type="button" class="vb" id="btnFile">📂 ファイルを選んで取り込む</button><button type="button" class="vb" id="btnPasteToggle">📋 貼り付けて取り込む</button><button type="button" class="vb" id="btnRowAdd">＋ 1件追加</button><button type="button" class="vb dng" id="btnCatClear">この項目をすべて消す</button></div>';
+  h+='<div id="pasteBox" hidden><textarea id="pasteTa" rows="5" placeholder="ここに貼り付け(1行1件。項目はタブまたはカンマ区切り。項目順:'+esc(c.fields.join("、"))+')"></textarea><div class="btnrow"><button type="button" class="vb pri" id="btnPasteGo">取り込む</button></div></div>';
+  h+='<div class="pager">全 '+rows.length+' 件'+(rows.length>PER?' ／ <button type="button" class="vb" id="pgPrev"'+(pg<=0?" disabled":"")+'>◀</button> '+(pg+1)+' / '+pages+' <button type="button" class="vb" id="pgNext"'+(pg>=pages-1?" disabled":"")+'>▶</button>':"")+'</div>';
+  var start=pg*PER, end=Math.min(rows.length,start+PER);
+  for(var i=start;i<end;i++){
+    h+='<div class="vrow" data-i="'+i+'"><div class="rn">#'+(i+1)+'</div><button type="button" class="rdel" data-del="'+i+'" title="この1件を削除">✕</button><div class="rf" style="grid-template-columns:'+(c.fields.length>3?"repeat(auto-fit,minmax(150px,1fr))":"repeat(auto-fit,minmax(180px,1fr))")+'">';
+    c.fields.forEach(function(f,k){
+      h+='<div><label>'+esc(f)+'</label>'+(LONGF[f]&&c.id==="notes"?'<textarea rows="3" data-i="'+i+'" data-k="'+k+'">'+esc(rows[i][k]||"")+'</textarea>':'<input type="text" data-i="'+i+'" data-k="'+k+'" value="'+esc(rows[i][k]||"")+'">')+'</div>';
+    });
+    h+='</div></div>';
+  }
+  $("vPanel").innerHTML=h;
+  var P=$("vPanel");
+  $("btnFile").onclick=function(){ $("fileIn").click(); };
+  $("fileIn").onchange=function(e){
+    var files=Array.prototype.slice.call(e.target.files||[]); if(!files.length) return;
+    files.forEach(function(f){ var r=new FileReader(); r.onload=function(){ importText(c.id,String(r.result||""),f.name.replace(/\.[^.]+$/,"")); }; r.readAsText(f,"utf-8"); });
+    e.target.value="";
+  };
+  $("btnPasteToggle").onclick=function(){ $("pasteBox").hidden=!$("pasteBox").hidden; };
+  $("btnPasteGo").onclick=function(){ var ta=$("pasteTa"); importText(c.id,ta.value,"貼り付けメモ"); ta.value=""; };
+  $("btnRowAdd").onclick=function(){ data[c.id].push(c.fields.map(function(){ return ""; })); page[c.id]=Math.floor((data[c.id].length-1)/PER); renderAll(); };
+  $("btnCatClear").onclick=function(){ if(!rows.length) return; if(!window.confirm("「"+c.name+"」の入力済みデータ("+rows.length+"件)を、すべて消しますか？")) return; data[c.id]=[]; page[c.id]=0; renderAll(); };
+  if($("pgPrev")) $("pgPrev").onclick=function(){ page[c.id]=pg-1; renderPanel(); };
+  if($("pgNext")) $("pgNext").onclick=function(){ page[c.id]=pg+1; renderPanel(); };
+  Array.prototype.forEach.call(P.querySelectorAll("[data-del]"),function(b){ b.onclick=function(){ data[c.id].splice(+b.getAttribute("data-del"),1); renderAll(); }; });
+  Array.prototype.forEach.call(P.querySelectorAll("input[data-k],textarea[data-k]"),function(el){
+    el.addEventListener("input",function(){ data[c.id][+el.getAttribute("data-i")][+el.getAttribute("data-k")]=el.value; schedPlan(); renderTabsCountsOnly(); });
+  });
+}
+function renderTabsCountsOnly(){
+  Array.prototype.forEach.call($("vTabs").querySelectorAll(".tab"),function(b){ var c=catOf(b.getAttribute("data-cat")); b.querySelector(".cnt").textContent=nonEmpty(c.id).length+"件"; });
+}
+
+/* ---------- シリアライズ ---------- */
+function csvCell(s){ s=String(s==null?"":s); return /[",\n\r]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s; }
+function catText(c){
+  var rows=nonEmpty(c.id); if(!rows.length) return "";
+  var out="##"+c.name+","+rows.length+"\n"+c.fields.map(csvCell).join(",")+"\n";
+  rows.forEach(function(r){ out+=c.fields.map(function(f,k){ return csvCell(String(r[k]||"").replace(/\r?\n/g,"\n")); }).join(",")+"\n"; });
+  return out;
+}
+
+/* ---------- バイト・圧縮・暗号 ---------- */
+var enc=new TextEncoder(), dec=new TextDecoder("utf-8");
+function utf8(s){ return enc.encode(s); }
+function b64(u8){ var s="",i=0; for(;i<u8.length;i+=0x8000) s+=String.fromCharCode.apply(null,u8.subarray(i,i+0x8000)); return btoa(s); }
+function unb64(s){ var b=atob(s), u=new Uint8Array(b.length); for(var i=0;i<b.length;i++) u[i]=b.charCodeAt(i); return u; }
+var CRC_T=(function(){ var t=[],c,n,k; for(n=0;n<256;n++){ c=n; for(k=0;k<8;k++) c=c&1?(0xEDB88320^(c>>>1)):(c>>>1); t[n]=c>>>0; } return t; })();
+function crc32(u8){ var c=0xFFFFFFFF; for(var i=0;i<u8.length;i++) c=CRC_T[(c^u8[i])&255]^(c>>>8); return ((c^0xFFFFFFFF)>>>0).toString(16).padStart(8,"0"); }
+async function pipe(stream,bytes){ var w=stream.writable.getWriter(); w.write(bytes); w.close(); return new Uint8Array(await new Response(stream.readable).arrayBuffer()); }
+function deflate(b){ return pipe(new CompressionStream("deflate-raw"),b); }
+function inflate(b){ return pipe(new DecompressionStream("deflate-raw"),b); }
+async function deriveKey(pass,salt,usage){
+  var km=await crypto.subtle.importKey("raw",utf8(pass),"PBKDF2",false,["deriveKey"]);
+  return crypto.subtle.deriveKey({name:"PBKDF2",salt:salt,iterations:200000,hash:"SHA-256"},km,{name:"AES-GCM",length:256},false,usage);
+}
+async function encryptBytes(bytes,pass){
+  var salt=crypto.getRandomValues(new Uint8Array(16)), iv=crypto.getRandomValues(new Uint8Array(12));
+  var key=await deriveKey(pass,salt,["encrypt"]);
+  var ct=new Uint8Array(await crypto.subtle.encrypt({name:"AES-GCM",iv:iv},key,bytes));
+  var out=new Uint8Array(28+ct.length); out.set(salt,0); out.set(iv,16); out.set(ct,28); return out;
+}
+async function decryptBytes(u8,pass){
+  var key=await deriveKey(pass,u8.subarray(0,16),["decrypt"]);
+  return new Uint8Array(await crypto.subtle.decrypt({name:"AES-GCM",iv:u8.subarray(16,28)},key,u8.subarray(28)));
+}
+function rid(){ var a="abcdefghijkmnpqrstuvwxyz23456789",s="",r=crypto.getRandomValues(new Uint8Array(6)); for(var i=0;i<6;i++) s+=a[r[i]%a.length]; return s; }
+
+/* ---------- セット作成 ---------- */
+function opts(){
+  return {size:+$("oSize").value, level:$("oLevel").value, comp:$("oComp").value==="auto"&&HAS_CS, group:$("oGroup").value,
+    encScope:$("oEncScope").value, halfScope:$("oHalfScope").value, pass:$("oPass").value};
+}
+async function encodeSet(text,o,doEnc,real){
+  var raw=utf8(text), comp=null, mode, payload=null, len;
+  if(o.comp){ try{ comp=await deflate(raw); }catch(e){ comp=null; } }
+  if(doEnc){
+    var useC=!!(comp&&comp.length<raw.length*0.9), inner=useC?comp:raw; mode=useC?"x":"e";
+    if(real){ payload=b64(await encryptBytes(inner,o.pass)); len=payload.length; } else len=Math.ceil((inner.length+28)/3)*4;
+  } else {
+    var zl=comp?Math.ceil(comp.length/3)*4:0;
+    if(comp&&zl<raw.length*0.9){ mode="z"; payload=b64(comp); len=payload.length; } else { mode="p"; payload=text; len=raw.length; }
+  }
+  return {mode:mode,payload:payload,len:len,rawLen:raw.length,compLen:comp?comp.length:null};
+}
+function chunkPayload(mode,payload,maxB){
+  var parts=[];
+  if(mode==="p"){
+    var lines=payload.match(/[^\n]*\n|[^\n]+$/g)||[], cur="", curB=0;
+    var flush=function(){ if(cur!==""){ parts.push(cur); cur=""; curB=0; } };
+    lines.forEach(function(ln){
+      var lb=utf8(ln).length;
+      if(lb>maxB){ flush(); Array.from(ln).forEach(function(ch){ var cb=utf8(ch).length; if(curB+cb>maxB) flush(); cur+=ch; curB+=cb; }); return; }
+      if(curB+lb>maxB) flush(); cur+=ln; curB+=lb;
+    });
+    flush();
+  } else { for(var i=0;i<payload.length;i+=maxB) parts.push(payload.slice(i,i+maxB)); }
+  return parts.length?parts:[""];
+}
+function countParts(set,maxB){ return set.payload!=null?chunkPayload(set.mode,set.payload,maxB).length:Math.max(1,Math.ceil(set.len/maxB)); }
+function wantEnc(imp,o){ return o.encScope==="all"||(o.encScope==="imp"&&imp); }
+function wantHalf(imp,o){ return o.halfScope==="all"||(o.halfScope==="imp"&&imp); }
+function selectedGroups(o){
+  var sel=[]; CATS.forEach(function(c){ var cb=document.querySelector('#vSel input[data-c="'+c.id+'"]'); if(cb&&cb.checked&&nonEmpty(c.id).length) sel.push(c); });
+  if(!sel.length) return [];
+  if(o.group==="merge") return [{id:"merged",name:"まとめ("+sel.map(function(c){ return c.name; }).join("・")+")",short:"まとめ",imp:sel.some(function(c){ return c.imp; }),text:sel.map(catText).join(""),n:sel.reduce(function(a,c){ return a+nonEmpty(c.id).length; },0)}];
+  return sel.map(function(c){ return {id:c.id,name:c.name,short:c.name,imp:c.imp,text:catText(c),n:nonEmpty(c.id).length}; });
+}
+function renderSel(){
+  var keep={}; Array.prototype.forEach.call($("vSel").querySelectorAll("input"),function(i){ keep[i.getAttribute("data-c")]=i.checked; });
+  var h=""; CATS.forEach(function(c){ var n=nonEmpty(c.id).length;
+    h+='<label class="chk"><input type="checkbox" data-c="'+c.id+'"'+((keep[c.id]!==undefined?keep[c.id]:true)?" checked":"")+(n?"":" disabled")+'> '+c.ico+" "+esc(c.name)+' <span class="small">('+n+'件)</span>'+(c.imp?' <span class="flag w">重要</span>':"")+'</label>';
+  });
+  $("vSel").innerHTML=h;
+  Array.prototype.forEach.call($("vSel").querySelectorAll("input"),function(i){ i.onchange=schedPlan; });
+}
+var planTimer, planTok=0;
+function schedPlan(){ clearTimeout(planTimer); planTimer=setTimeout(renderPlan,250); }
+async function renderPlan(){
+  var tok=++planTok, o=opts(), gs=selectedGroups(o), maxB=Math.max(120,o.size-HDR_LEN), h="";
+  var encOk=HAS_SUBTLE, note="";
+  if(o.encScope!=="none"){
+    if(!HAS_SUBTLE) note="⚠ このブラウザ／開き方では暗号化機能が使えません。(https または保存したファイルを、Chrome／Safari／Edge等で開いてください)";
+    else if(o.pass.length<8) note="🔒 暗号化する項目があります。パスフレーズ(8文字以上)を入力してください。";
+    else note="🔒 パスフレーズは、QRや紙と別の場所(記憶・別の紙)に保管してください。忘れると復元できません。";
+  } else note="暗号化しない場合、紙を手に入れた人は、中身をそのまま読めます。重要な項目では暗号化をおすすめします。";
+  $("oEncNote").textContent=note;
+  h+="<tr><th>項目</th><th>件数</th><th>文字データ</th><th>QRに入れる形</th><th>QRの枚数</th><th>印刷</th></tr>";
+  var total=0;
+  for(var i=0;i<gs.length;i++){
+    var g=gs[i], de=wantEnc(g.imp,o)&&encOk, hf=wantHalf(g.imp,o);
+    var s=await encodeSet(g.text,o,de,false); if(tok!==planTok) return;
+    var np=countParts(s,maxB); total+=np;
+    var form={p:"テキストのまま",z:"圧縮(deflate)+Base64",e:"暗号化+Base64",x:"圧縮→暗号化+Base64"}[s.mode];
+    h+="<tr><td>"+esc(g.short)+(g.imp?' <span class="flag w">重要</span>':"")+"</td><td>"+g.n+"件</td><td>"+Math.round(s.rawLen/1024*10)/10+" KB<br><span class=\"small\">"+s.rawLen.toLocaleString()+"バイト</span></td><td>"+form+"<br><span class=\"small\">→ "+s.len.toLocaleString()+"バイト</span></td><td><b>"+np+"枚</b>"+(np>40?' <span class="flag w">多い</span>':"")+"</td><td>"+(hf?'<span class="flag w">✂ 半分カット</span>':'<span class="flag">通常</span>')+"</td></tr>";
+  }
+  if(!gs.length) h+='<tr><td colspan="6" class="small">QRにする項目がありません。上の「1. データを入力」で、先にデータを入れてください。</td></tr>';
+  else h+='<tr><td colspan="6"><b>合計:約 '+total+' 枚</b>'+(total>40?' (枚数が多いです。容量を「大」にするか、項目を絞ると減ります)':"")+'</td></tr>';
+  $("vPlan").innerHTML=h;
+}
+
+/* ---------- QR描画 ---------- */
+function qrSvg(text,level){
+  var q=qrcode(0,level); q.addData(text); q.make();
+  var n=q.getModuleCount(), m=4, d="", r, c;
+  for(r=0;r<n;r++) for(c=0;c<n;c++) if(q.isDark(r,c)) d+="M"+(c+m)+" "+(r+m)+"h1v1h-1z";
+  var t=n+2*m;
+  return {svg:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+t+' '+t+'" shape-rendering="crispEdges" preserveAspectRatio="none"><rect width="'+t+'" height="'+t+'" fill="#fff"/><path d="'+d+'" fill="#000"/></svg>',n:n,ver:(n-17)/4,total:t};
+}
+function header(id,i,n,mode,crc){ return "QV1."+id+"."+i+"."+n+"."+mode+"."+crc+"\n"; }
+
+async function buildItems(){
+  var o=opts(), gs=selectedGroups(o), items=[], maxB=Math.max(120,o.size-HDR_LEN);
+  var needEnc=gs.some(function(g){ return wantEnc(g.imp,o); });
+  if(needEnc){
+    if(!HAS_SUBTLE){ toast("このブラウザでは暗号化できません。暗号化を「しない」にするか、別のブラウザで開いてください"); return null; }
+    if(o.pass.length<8){ toast("パスフレーズを8文字以上で入力してください(暗号化する項目があります)"); $("oPass").focus(); return null; }
+  }
+  for(var i=0;i<gs.length;i++){
+    var g=gs[i], de=wantEnc(g.imp,o), hf=wantHalf(g.imp,o);
+    var s=await encodeSet(g.text,o,de,true), crc=crc32(utf8(s.payload)), id=rid();
+    var ch=chunkPayload(s.mode,s.payload,maxB), N=ch.length;
+    var parts=ch.map(function(p,k){ return header(id,k+1,N,s.mode,crc)+p; });
+    // 描画できるか確認(容量オーバーを先に検出)
+    for(var k=0;k<parts.length;k++){ try{ qrSvg(parts[k],o.level); }catch(e){ toast("容量が大きすぎてQRにできません。「1枚あたりの容量」を小さくしてください"); return null; } }
+    items.push({id:id,cat:g.id,name:g.short,imp:g.imp,mode:s.mode,enc:(s.mode==="e"||s.mode==="x"),half:hf,level:o.level,n:g.n,N:N,t:Date.now(),parts:parts});
+  }
+  return items;
+}
+
+/* ---------- トレイ ---------- */
+function saveTray(){
+  try{
+    if($("oStore").value==="mem"){ localStorage.removeItem(KEY_TRAY); return; }
+    localStorage.setItem(KEY_TRAY,JSON.stringify(tray));
+  }catch(e){ toast("端末への保存に失敗しました(容量不足の可能性)。印刷してから追加してください"); }
+}
+function loadTray(){ try{ var r=localStorage.getItem(KEY_TRAY); if(r){ var a=JSON.parse(r); if(Array.isArray(a)) tray=a; } }catch(e){} }
+var fmtD=function(t){ var d=new Date(t); return d.getFullYear()+"/"+(d.getMonth()+1)+"/"+d.getDate(); };
+function renderTray(){
+  var h="";
+  if(!tray.length) h='<p class="small" style="margin:6px 0 12px;">トレイは空です。「2. QRの設定」でQRを作ると、ここに溜まります。</p>';
+  tray.forEach(function(it,idx){
+    var svg=""; try{ svg=qrSvg(it.parts[0],it.level).svg; }catch(e){ svg=""; }
+    h+='<div class="tray-item"><div class="ti-qr">'+svg+'</div><div><b>'+esc(it.name)+'</b><div class="ti-m">'+it.n+'件 ／ QR '+it.N+'枚 ／ セットID <code>'+it.id+'</code> ／ '+fmtD(it.t)+'<br>'+(it.enc?'<span class="flag">🔒 暗号化</span>':'<span class="flag w">暗号化なし</span>')+(it.half?'<span class="flag w">✂ 半分カット</span>':"")+'<span class="flag">'+({p:"テキスト",z:"圧縮",e:"暗号化",x:"圧縮+暗号化"}[it.mode])+'</span><span class="flag">訂正'+it.level+'</span></div></div><div class="ti-act"><button type="button" class="vb dng" data-rm="'+idx+'">削除</button></div></div>';
+  });
+  $("vTray").innerHTML=h;
+  Array.prototype.forEach.call($("vTray").querySelectorAll("[data-rm]"),function(b){ b.onclick=function(){ tray.splice(+b.getAttribute("data-rm"),1); saveTray(); renderTray(); }; });
+  var total=tray.reduce(function(a,t){ return a+t.N; },0);
+  $("btnPrintV").disabled=!tray.length; $("btnPrintV").textContent="🖨 トレイのQR("+total+"枚)を、すべて印刷";
+  updatePWarn();
+}
+function updatePWarn(){
+  var mm=+$("pSize").value, worst=0, wv=0;
+  tray.forEach(function(it){ it.parts.forEach(function(p){ try{ var r=qrSvg(p,it.level); var per=mm/r.total; if(!worst||per<worst){ worst=per; wv=r.ver; } }catch(e){} }); });
+  var w="";
+  if(worst){ w="いちばん細かいQR:バージョン"+wv+"、1マスあたり約"+(Math.round(worst*100)/100)+"mm。";
+    if(worst<0.33) w+=" ⚠ 細かすぎて、読み取りにくい可能性があります。印刷サイズを大きくするか、1枚あたりの容量を「小」にして作り直してください。";
+    else if(worst<0.42) w+=" やや細かいです。高解像度のプリンターで印刷し、試し読みしてください。";
+    else w+=" 読み取りに十分な大きさです。"; }
+  $("pWarn").textContent=w;
+}
+
+/* ---------- 印刷 ---------- */
+function cellHtml(it,part,k,mm,side){
+  var r; try{ r=qrSvg(part,it.level); }catch(e){ return ""; }
+  var cap=esc(it.name)+" "+(k+1)+"/"+it.N+"<br>ID "+it.id+" ・ "+fmtD(it.t);
+  var w=side?mm/2:mm, svgStyle=side==="R"?"left:-"+(mm/2)+"mm;":"left:0;";
+  var tick=side?'<span class="tick tk-t" style="'+(side==="L"?"right":"left")+':0;"></span><span class="tick tk-b" style="'+(side==="L"?"right":"left")+':0;"></span>':"";
+  var lab=side?('<b>'+(side==="L"?"A 左半分":"B 右半分")+'</b> '+cap):cap;
+  return '<div class="qc" style="width:'+(w+4)+'mm"><div class="qs" style="width:'+w+'mm;height:'+mm+'mm">'+r.svg.replace("<svg ",'<svg style="'+svgStyle+'width:'+mm+'mm;height:'+mm+'mm" ')+tick+'</div><div class="ql">'+lab+'</div></div>';
+}
+function buildPrint(){
+  var mm=+$("pSize").value, h="", normal=tray.filter(function(t){ return !t.half; }), halves=tray.filter(function(t){ return t.half; });
+  if($("pCover").checked){
+    h+='<div class="pg"><h2>紙のQR金庫 ― 保管QRの目次</h2><p class="pn">作成日:'+fmtD(Date.now())+'　／　このページに、パスワード・パスフレーズは書かないでください。</p><table><tr><th>項目</th><th>件数</th><th>QR枚数</th><th>形式</th><th>保管</th><th>セットID</th></tr>';
+    tray.forEach(function(it){ h+='<tr><td>'+esc(it.name)+'</td><td>'+it.n+'</td><td>'+it.N+'</td><td>'+({p:"テキスト",z:"圧縮+Base64",e:"暗号化",x:"圧縮+暗号化"}[it.mode])+'</td><td>'+(it.half?"半分カット(A/Bを別々に)":"通常")+'</td><td>'+it.id+'</td></tr>'; });
+    h+='</table><p class="pn" style="margin-top:5mm;"><b>使い方</b><br>① スマホの標準カメラで読み取ります。「テキスト」形式は、そのまま内容が表示されます。<br>② 圧縮・暗号化した形式は、読み取った文字(QV1.…で始まる)をコピーし、「紙のQR金庫」の「4.復元」に、1枚ずつ貼り付けます。暗号化は、パスフレーズも入力します。<br>③ 複数枚のセットは、全部そろえて復元します(順番は、ばらばらでも大丈夫です)。<br>④ 「半分カット」は、A(左半分)とB(右半分)の赤い目印をそろえて、平らに合わせて読み取ります。AとBは、別々の場所に保管します。<br>⑤ このQRを使ったあとは、紙を元の場所に戻し、パスワードを変更した場合は、新しいQRに作り直します。</p></div>';
+  }
+  var cells=function(list,side){ var s=""; list.forEach(function(it){ it.parts.forEach(function(p,k){ s+=cellHtml(it,p,k,mm,side); }); }); return s; };
+  if(normal.length) h+='<div class="pg"><h2>保管用QR</h2><p class="pn">切り取り線(点線)で切って、保管します。</p><div class="cells">'+cells(normal,null)+'</div></div>';
+  if(halves.length){
+    h+='<div class="pg"><h2>A:左半分 ― 保管場所①</h2><p class="pn">点線で切り取り、<b>Bとは別の場所</b>に保管してください。読むときは、赤い目印をBの目印とそろえて、平らに合わせます。</p><div class="cells">'+cells(halves,"L")+'</div></div>';
+    h+='<div class="pg"><h2>B:右半分 ― 保管場所②(Aと別の場所)</h2><p class="pn">点線で切り取り、<b>Aとは別の場所</b>に保管してください。</p><div class="cells">'+cells(halves,"R")+'</div></div>';
+  }
+  return h;
+}
+function doPrint(){
+  if(!tray.length) return;
+  $("printRoot").innerHTML=buildPrint();
+  document.body.classList.add("printing-vault");
+  setTimeout(function(){ window.print(); },60);
+}
+
+/* ---------- 復元 ---------- */
+var HDR_RE=/(^|\n)QV1\.([a-z0-9]{4,8})\.(\d+)\.(\d+)\.([pzex])\.([0-9a-f]{8})\n/g;
+function parseParts(text){
+  text=text.replace(/\r\n?/g,"\n").replace(/^\s+/,"");
+  var hits=[],m; HDR_RE.lastIndex=0;
+  while((m=HDR_RE.exec(text))){ hits.push({id:m[2],i:+m[3],n:+m[4],mode:m[5],crc:m[6],start:m.index+m[1].length,bodyStart:HDR_RE.lastIndex}); }
+  return hits.map(function(h,k){
+    var end=k+1<hits.length?hits[k+1].start:text.length, body=text.slice(h.bodyStart,end);
+    if(k+1<hits.length&&hits.length>1) body=body.replace(/\n\n$/,"\n");
+    return {id:h.id,i:h.i,n:h.n,mode:h.mode,crc:h.crc,payload:body};
+  });
+}
+function renderRestore(){
+  var h="", ids=Object.keys(restoreSets);
+  if(!ids.length) h='<p class="small">まだ追加されていません。</p>';
+  ids.forEach(function(id){
+    var s=restoreSets[id], have=Object.keys(s.parts).map(Number).sort(function(a,b){ return a-b; }), miss=[];
+    for(var i=1;i<=s.n;i++) if(!s.parts[i]) miss.push(i);
+    h+='<div class="pstat">セット <code>'+id+'</code>(形式:'+({p:"テキスト",z:"圧縮",e:"暗号化",x:"圧縮+暗号化"}[s.mode])+')― '+have.length+' / '+s.n+' 枚 '+(miss.length?'<span class="miss">不足:'+miss.join("、")+'枚目</span>':'<span class="ok">そろいました</span>')+'</div>';
+  });
+  $("vrList").innerHTML=h;
+}
+function addParts(text){
+  var ps=parseParts(text); if(!ps.length){ toast("QV1. で始まる文字が見つかりません。QRを読み取った文字を、そのまま貼り付けてください"); return; }
+  ps.forEach(function(p){
+    var s=restoreSets[p.id]||(restoreSets[p.id]={n:p.n,mode:p.mode,crc:p.crc,parts:{}});
+    s.parts[p.i]=p.payload;
+  });
+  toast(ps.length+"枚を追加しました"); renderRestore();
+}
+async function restore(){
+  var ids=Object.keys(restoreSets); if(!ids.length){ toast("先に、QRの文字を追加してください"); return; }
+  var out=[];
+  for(var q=0;q<ids.length;q++){
+    var id=ids[q], s=restoreSets[id], payload="", miss=[];
+    for(var i=1;i<=s.n;i++){ if(s.parts[i]==null) miss.push(i); else payload+=s.parts[i]; }
+    if(miss.length){ out.push("【セット "+id+"】不足している枚数があります:"+miss.join("、")+"枚目"); continue; }
+    if(crc32(utf8(payload))!==s.crc){ out.push("【セット "+id+"】データの照合(CRC)が一致しません。貼り付けのしかた(1枚ずつ)や、読み取りミスを確認してください"); continue; }
+    try{
+      var bytes;
+      if(s.mode==="p") bytes=utf8(payload);
+      else if(s.mode==="z") bytes=await inflate(unb64(payload));
+      else {
+        var pw=$("vrPass").value; if(!pw){ out.push("【セット "+id+"】暗号化されています。パスフレーズを入力してください"); continue; }
+        bytes=await decryptBytes(unb64(payload),pw); if(s.mode==="x") bytes=await inflate(bytes);
+      }
+      out.push("【セット "+id+"】\n"+dec.decode(bytes));
+    }catch(e){ out.push("【セット "+id+"】復元できません。パスフレーズが違うか、データが壊れています"); }
+  }
+  $("vrOut").textContent=out.join("\n\n"); $("vrOutWrap").hidden=false;
+}
+
+/* ---------- 全データ削除 ---------- */
+function wipeAll(){
+  CATS.forEach(function(c){ data[c.id]=[]; page[c.id]=0; });
+  tray=[]; restoreSets={};
+  Array.prototype.forEach.call(document.querySelectorAll("#viewVault input[type=text],#viewVault input[type=password],#viewVault textarea,#viewVault input[type=file]"),function(e){ e.value=""; });
+  $("vrOut").textContent=""; $("vrOutWrap").hidden=true; $("printRoot").innerHTML="";
+  try{ Object.keys(localStorage).forEach(function(k){ if(/^(qrvault|mimamoriQR)/.test(k)) localStorage.removeItem(k); }); }catch(e){}
+  try{ sessionStorage.clear(); }catch(e){}
+  try{ if(window.__mimamoriWipe) window.__mimamoriWipe(); }catch(e){}
+  try{ if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText("").catch(function(){}); }catch(e){}
+  renderAll();
+}
+function openWipe(){ $("wipeT").textContent="🧹 印刷は終わりましたか？"; $("wipeBody").innerHTML=WIPE_Q; $("wipeYes").hidden=false; $("wipeNo").textContent="まだ(残す)"; $("wipeDlg").classList.add("open"); }
+var WIPE_Q="";
+function wipeDone(){
+  $("wipeT").textContent="🧹 削除しました";
+  $("wipeBody").innerHTML='<p><b>✅ すべて削除しました。</b>(入力データ・QRトレイ・ローカルストレージ・復元画面・コピー内容)</p><p><b>あと、手作業で消すもの</b></p><ul><li>スマホ／PCに書き出したCSV・vCardファイル(ゴミ箱も空にする)</li><li>ブラウザの閲覧履歴・ダウンロード履歴</li><li>プリンターの印刷履歴・PDFで保存したファイル</li></ul><p>印刷した紙は、安全な場所に保管してください。</p>';
+  $("wipeYes").hidden=true; $("wipeNo").textContent="閉じる";
+}
+
+/* ---------- 全体の描画・イベント ---------- */
+function renderAll(){ renderTabs(); renderPanel(); renderSel(); renderTray(); schedPlan(); renderRestore(); }
+["oGroup","oSize","oLevel","oComp","oEncScope","oHalfScope"].forEach(function(id){ $(id).addEventListener("change",schedPlan); });
+$("oPass").addEventListener("input",schedPlan);
+if(!HAS_CS){ $("oComp").value="off"; $("oComp").disabled=true; }
+$("oStore").addEventListener("change",function(){ saveTray(); });
+$("pSize").addEventListener("change",updatePWarn);
+$("btnAdd").onclick=async function(){
+  var b=$("btnAdd"); b.disabled=true; var o=b.textContent; b.textContent="作成中…";
+  try{
+    var items=await buildItems();
+    if(items&&items.length){ items.forEach(function(it){ tray.push(it); }); saveTray(); renderTray(); toast(items.length+"セット("+items.reduce(function(a,t){ return a+t.N; },0)+"枚)をトレイに追加しました"); $("vTray").scrollIntoView({behavior:"smooth",block:"center"}); }
+    else if(items&&!items.length) toast("QRにする項目がありません。データを入力・選択してください");
+  } finally { b.disabled=false; b.textContent=o; }
+};
+$("btnPrintV").onclick=doPrint;
+$("btnWipeV").onclick=function(){ WIPE_Q=$("wipeBody").getAttribute("data-q")||$("wipeBody").innerHTML; openWipe(); };
+$("btnPartAdd").onclick=function(){ addParts($("vrIn").value); $("vrIn").value=""; };
+$("btnPartClear").onclick=function(){ restoreSets={}; renderRestore(); };
+$("btnRestore").onclick=restore;
+$("btnRCopy").onclick=function(){ var t=$("vrOut").textContent; if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(function(){ toast("コピーしました"); },function(){ toast("コピーできませんでした"); }); };
+$("btnRSave").onclick=function(){ var a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([$("vrOut").textContent],{type:"text/plain;charset=utf-8"})); a.download="restore.txt"; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },500); };
+$("btnRClear").onclick=function(){ $("vrOut").textContent=""; $("vrOutWrap").hidden=true; };
+$("wipeNo").onclick=function(){ $("wipeDlg").classList.remove("open"); };
+$("wipeYes").onclick=function(){ wipeAll(); wipeDone(); };
+$("wipeBody").setAttribute("data-q",$("wipeBody").innerHTML);
+window.addEventListener("afterprint",function(){
+  document.body.classList.remove("printing-vault");
+  if(curView==="vault"||curView==="mimamori"){ WIPE_Q=$("wipeBody").getAttribute("data-q"); openWipe(); }
+});
+window.__qrvaultOpenWipe=function(){ WIPE_Q=$("wipeBody").getAttribute("data-q"); openWipe(); };
+window.addEventListener("beforeunload",function(){ try{ if($("oStore").value==="mem") localStorage.removeItem(KEY_TRAY); }catch(e){} });
+loadTray(); renderAll();
+window.__qv={data:data,tray:function(){ return tray; },encodeSet:encodeSet,chunkPayload:chunkPayload,qrSvg:qrSvg,renderAll:renderAll};
+})();
+
+</script>
+</body>
+</html>
